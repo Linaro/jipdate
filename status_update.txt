@@ -1,0 +1,13 @@
+[SWG-25]
+This is my superduper comment
+
+It can contain empty lines        many space, and even references
+to other issues like [LHG-52].
+
+[SWG-26]
+This issue is currently blocked.
+
+But we intend to work with it after issue [SWG-200].
+
+[SWG-27]
+No updates this week
