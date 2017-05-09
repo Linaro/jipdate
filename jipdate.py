@@ -75,6 +75,14 @@ def get_jira_issues(jira, exclude_stories):
           "issues. Manually edit the file, then re-run this script without\n" + \
           "the '-c' parameter to update your issues."
 
+def should_update():
+    while True:
+        answer = raw_input("Sure you want to update Jira with the information " +
+                           "above? [y/n] ").lower().strip()
+        if answer in set(['y', 'n']):
+            return answer
+        else:
+            print "Incorrect input: %s" % answer
 ################################################################################
 def main(argv):
     args = get_args()
@@ -113,6 +121,16 @@ def main(argv):
 
     myissue = "";
     mycomment = "";
+
+    print "status_update.txt contains:"
+    print "================================================================================"
+    for l in status:
+        print l.strip()
+    print "================================================================================"
+
+    if should_update() == "n":
+        print "No change, nothing has been updated!"
+        sys.exit()
 
     # State to keep track of whether we are in an issue or a comment
     state = "issue"
