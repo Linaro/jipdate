@@ -1,5 +1,20 @@
 # Jira comment updater
 
+## Parameters to the script
+
+```
+usage: jipdate.py [-h] [-c] [-x]
+
+Script used to update comments in Jira
+
+optional arguments:
+  -h, --help  show this help message and exit
+  -c          Gather all Jira issue(s) assigned to you into the
+              status_update.txt file
+  -x          Enabling this flag will EXCLUDE stories. Used on combination
+              with "-c"
+```
+
 ## Installation
 ### 1. Clone this git
 ```bash
