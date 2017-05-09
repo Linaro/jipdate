@@ -55,10 +55,11 @@ for i in range(0, len(status)):
     if re.search(regex, line):
         if state == "comment":
             update_jira(myissue, mycomment)
-            mycomment = ""
+            state = "issue"
 
         myissue = line.strip();
         myissue = myissue[1:-1]
+        mycomment = ""
         state = "comment"
     else:
         mycomment += line

@@ -61,6 +61,33 @@ But we intend to work with it after issue [SWG-200].
 No updates this week
 ```
 
+You can also **start** the status file with any text. It will simply ignore that
+until it finds the first single row matching **[issue]**, example:
+
+```
+Hi all!
+
+This is my status update for this week.
+
+// Take care
+Joakim
+
+
+[SWG-25]
+This is my superduper comment
+
+It can contain empty lines        many space, and even references
+to other issues like [LHG-52].
+
+[SWG-26]
+This issue is currently blocked.
+
+But we intend to work with it after issue [SWG-200].
+
+[SWG-27]
+No updates this week
+```
+
 ### 2. Export your credentials in your shell
 ```bash
 $ export JIRA_USERNAME="john.doe@linaro.org"
