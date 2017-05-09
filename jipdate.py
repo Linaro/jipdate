@@ -14,13 +14,17 @@ server = 'https://dev-projects.linaro.org'
 #server = 'https://projects.linaro.org'
 
 def get_args():
-    parser = ArgumentParser(description='Script to create images on a format \
-                        that Mynewts bootloader expects')
+    parser = ArgumentParser(description='Script used to update comments in Jira')
 
     parser.add_argument('-c', required=False, action="store_true", \
             default=False, \
             help='Gather all Jira issue(s) assigned to you into the \
             status_update.txt file')
+
+    parser.add_argument('-x', required=False, action="store_true", \
+            default=False, \
+            help='Enabling this flag will EXCLUDE stories. Used on combination \
+            with "-c"')
 
     return parser.parse_args()
 
@@ -48,8 +52,13 @@ This is the status update from me for the last week.
 Cheers!
 """
 
-def get_jira_issues(jira):
-    jql = "assignee = currentUser() AND status not in (Resolved, Closed)"
+def get_jira_issues(jira, exclude_stories):
+    issue_type = "issuetype in (Epic, Initiative"
+    if not exclude_stories:
+        issue_type = issue_type + ", Story"
+    issue_type = issue_type + ") AND "
+
+    jql = issue_type + "assignee = currentUser() AND status not in (Resolved, Closed)"
     my_issues = jira.search_issues(jql)
     msg = message_header + get_my_name() + "\n\n"
 
@@ -79,8 +88,15 @@ def main(argv):
     credentials=(username, password)
     jira = JIRA(server, basic_auth=credentials)
 
+    exclude_stories = False
+    if args.x:
+        if not args.c:
+            print "Parameter '-x' can only be used together with '-c'"
+            sys.exit()
+        exclude_stories = True
+
     if args.c:
-        get_jira_issues(jira)
+        get_jira_issues(jira, exclude_stories)
         sys.exit()
 
     # Regexp to match Jira issue on a single line, i.e:
