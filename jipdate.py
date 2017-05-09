@@ -1,17 +1,21 @@
 #!/usr/bin/python2
 
-from jira import JIRA
 import json
-import re
 import os
+import re
 import sys
+import tempfile
 from argparse import ArgumentParser
+from jira import JIRA
+from subprocess import call
 
 # Sandbox server
 server = 'https://dev-projects.linaro.org'
 
 # Production server, comment out this in case you want to use the real server
 #server = 'https://projects.linaro.org'
+
+DEFAULT_FILE = "status_update.txt"
 
 def get_args():
     parser = ArgumentParser(description='Script used to update comments in Jira')
@@ -21,9 +25,13 @@ def get_args():
             help='Gather all Jira issue(s) assigned to you into the \
             status_update.txt file')
 
+    parser.add_argument('-e', required=False, action="store_true", \
+            default=False, \
+            help='Use the EDITOR instead of the status_update.txt file')
+
     parser.add_argument('-x', required=False, action="store_true", \
             default=False, \
-            help='Enabling this flag will EXCLUDE stories. Used on combination \
+            help='Enabling this flag will EXCLUDE stories. Used in combination \
             with "-c"')
 
     return parser.parse_args()
@@ -52,7 +60,9 @@ This is the status update from me for the last week.
 Cheers!
 """
 
-def get_jira_issues(jira, exclude_stories):
+def get_jira_issues(jira, exclude_stories, use_editor):
+    global DEFAULT_FILE
+
     issue_type = "issuetype in (Epic, Initiative"
     if not exclude_stories:
         issue_type = issue_type + ", Story"
@@ -62,19 +72,27 @@ def get_jira_issues(jira, exclude_stories):
     my_issues = jira.search_issues(jql)
     msg = message_header + get_my_name() + "\n\n"
 
-    with open ("status_update.txt", "w") as f:
-        f.write(msg)
+    if use_editor:
+        f = tempfile.NamedTemporaryFile(delete=False)
+    else:
+        f = open(DEFAULT_FILE, "w")
 
-        print "Found issue:"
-        for issue in my_issues:
-            print "%s : %s" % (issue, issue.fields.summary)
-            f.write("[%s]\nREMOVE THIS LINE: %s\nNo updates since last week.\n\n" % (issue,
-                issue.fields.summary))
+    DEFAULT_FILE = f.name
 
-    print "\nstatus_update.txt has been prepared with all of your open\n" + \
-          "issues. Manually edit the file, then re-run this script without\n" + \
-          "the '-c' parameter to update your issues."
+    f.write(msg)
+    print "Found issue:"
+    for issue in my_issues:
+        print "%s : %s" % (issue, issue.fields.summary)
+        f.write("[%s]\nREMOVE THIS LINE: %s\nNo updates since last week.\n\n" % (issue,
+            issue.fields.summary))
 
+    if not use_editor:
+        print "\n" + DEFAULT_FILE + " has been prepared with all of your open\n" + \
+              "issues. Manually edit the file, then re-run this script without\n" + \
+              "the '-c' parameter to update your issues."
+    f.close()
+
+################################################################################
 def should_update():
     while True:
         answer = raw_input("Sure you want to update Jira with the information " +
@@ -83,6 +101,7 @@ def should_update():
             return answer
         else:
             print "Incorrect input: %s" % answer
+
 ################################################################################
 def main(argv):
     args = get_args()
@@ -104,8 +123,12 @@ def main(argv):
         exclude_stories = True
 
     if args.c:
-        get_jira_issues(jira, exclude_stories)
-        sys.exit()
+        get_jira_issues(jira, exclude_stories, args.e)
+        # Only continue if we run directly in the editor
+        if not args.e:
+            sys.exit()
+        else:
+            call([os.environ['EDITOR'], DEFAULT_FILE])
 
     # Regexp to match Jira issue on a single line, i.e:
     # [SWG-28]
@@ -116,13 +139,13 @@ def main(argv):
     # Contains the status text, it could be a file or a status email
     status = ""
 
-    with open("status_update.txt") as f:
+    with open(DEFAULT_FILE) as f:
         status = f.readlines()
 
     myissue = "";
     mycomment = "";
 
-    print "status_update.txt contains:"
+    print "Information to update is as follows:"
     print "================================================================================"
     for l in status:
         print l.strip()

@@ -3,7 +3,7 @@
 ## Parameters to the script
 
 ```
-usage: jipdate.py [-h] [-c] [-x]
+usage: jipdate.py [-h] [-c] [-e] [-x]
 
 Script used to update comments in Jira
 
@@ -11,7 +11,8 @@ optional arguments:
   -h, --help  show this help message and exit
   -c          Gather all Jira issue(s) assigned to you into the
               status_update.txt file
-  -x          Enabling this flag will EXCLUDE stories. Used on combination
+  -e          Use the EDITOR instead of the status_update.txt file
+  -x          Enabling this flag will EXCLUDE stories. Used in combination
               with "-c"
 ```
 
