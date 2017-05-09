@@ -49,8 +49,7 @@ def update_jira(i, c):
 # State to keep track of whether we are in an issue or a comment
 state = "issue"
 
-for i in range(0, len(status)):
-    line = status[i]
+for line in status:
     # New issue?
     if re.search(regex, line):
         if state == "comment":
