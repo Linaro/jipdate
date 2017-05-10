@@ -91,6 +91,7 @@ def get_jira_issues(jira, exclude_stories, use_editor):
         f.write("[%s]\n" % issue)
         f.write("# Header: %s\n" % issue.fields.summary)
         f.write("# Type: %s\n" % issue.fields.issuetype)
+        f.write("# Status: %s\n" % issue.fields.status)
         f.write("No updates since last week.\n\n")
 
     if not use_editor:
@@ -157,7 +158,7 @@ def main(argv):
     # [SWG-28]
     # [LITE-32]
     # etc ...
-    regex = r"^\[[A-Z]+-\d+\]\n$"
+    regex = r"^\[([A-Z]+-\d+)\]\n$"
 
     # Contains the status text, it could be a file or a status email
     status = ""
@@ -183,13 +184,13 @@ def main(argv):
 
     for line in status:
         # New issue?
-        if re.search(regex, line):
+        match = re.search(regex, line)
+        if match:
             if state == "comment":
                 update_jira(jira, myissue, mycomment)
                 state = "issue"
 
-            myissue = line.strip();
-            myissue = myissue[1:-1]
+            myissue = match.group(1)
             mycomment = ""
             state = "comment"
         else:
