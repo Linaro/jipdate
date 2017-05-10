@@ -88,8 +88,10 @@ def get_jira_issues(jira, exclude_stories, use_editor):
     print("Found issue:")
     for issue in my_issues:
         print("%s : %s" % (issue, issue.fields.summary))
-        f.write("[%s]\nREMOVE THIS LINE: %s\nNo updates since last week.\n\n" % (issue,
-            issue.fields.summary))
+        f.write("[%s]\n" % issue)
+        f.write("# Header: %s\n" % issue.fields.summary)
+        f.write("# Type: %s\n" % issue.fields.issuetype)
+        f.write("No updates since last week.\n\n")
 
     if not use_editor:
         print("\n" + DEFAULT_FILE + " has been prepared with all of your open\n" + \
