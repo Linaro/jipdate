@@ -29,10 +29,9 @@ def vprint(*args, **kwargs):
 def get_args():
     parser = ArgumentParser(description='Script used to update comments in Jira')
 
-    parser.add_argument('-c', required=False, action="store_true", \
+    parser.add_argument('-q', required=False, action="store_true", \
             default=False, \
-            help='Gather all Jira issue(s) assigned to you into the \
-            status_update.txt file')
+            help='Query Jira for issue(s) assigned to you')
 
     parser.add_argument('-e', required=False, action="store_true", \
             default=False, \
@@ -230,11 +229,11 @@ def main(argv):
     exclude_stories = args.x
     epics_only = args.e
     if args.x or args.e:
-        if not args.c:
+        if not args.q:
             eprint("Arguments '-x' and '-e' can only be used together with '-c'")
             sys.exit()
 
-    if args.c:
+    if args.q:
         get_jira_issues(jira, exclude_stories, epics_only, args.all, args.i)
         # Only continue if we run directly in the editor
         if not args.i:
