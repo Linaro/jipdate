@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import json
 import os
 import re
@@ -8,6 +9,7 @@ import tempfile
 from argparse import ArgumentParser
 from jira import JIRA
 from subprocess import call
+import sys
 
 # Sandbox server
 server = 'https://dev-projects.linaro.org'
@@ -16,6 +18,9 @@ server = 'https://dev-projects.linaro.org'
 #server = 'https://projects.linaro.org'
 
 DEFAULT_FILE = "status_update.txt"
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 def get_args():
     parser = ArgumentParser(description='Script used to update comments in Jira')
@@ -45,10 +50,10 @@ def get_my_name():
 ################################################################################
 
 def update_jira(jira, i, c):
-    print "Updating Jira issue: %s with comment:" % i
-    print "-- 8< --------------------------------------------------------------------------"
-    print "%s" % c
-    print "-- >8 --------------------------------------------------------------------------\n\n"
+    print("Updating Jira issue: %s with comment:" % i)
+    print("-- 8< --------------------------------------------------------------------------")
+    print("%s" % c)
+    print("-- >8 --------------------------------------------------------------------------\n\n")
     jira.add_comment(i, c)
 
 ################################################################################
@@ -80,16 +85,16 @@ def get_jira_issues(jira, exclude_stories, use_editor):
     DEFAULT_FILE = f.name
 
     f.write(msg)
-    print "Found issue:"
+    print("Found issue:")
     for issue in my_issues:
-        print "%s : %s" % (issue, issue.fields.summary)
+        print("%s : %s" % (issue, issue.fields.summary))
         f.write("[%s]\nREMOVE THIS LINE: %s\nNo updates since last week.\n\n" % (issue,
             issue.fields.summary))
 
     if not use_editor:
-        print "\n" + DEFAULT_FILE + " has been prepared with all of your open\n" + \
+        print("\n" + DEFAULT_FILE + " has been prepared with all of your open\n" + \
               "issues. Manually edit the file, then re-run this script without\n" + \
-              "the '-c' parameter to update your issues."
+              "the '-c' parameter to update your issues.")
     f.close()
 
 ################################################################################
@@ -100,7 +105,7 @@ def should_update():
         if answer in set(['y', 'n']):
             return answer
         else:
-            print "Incorrect input: %s" % answer
+            print("Incorrect input: %s" % answer)
 
 def open_editor(filename):
     if "EDITOR" in os.environ:
@@ -112,7 +117,7 @@ def open_editor(filename):
     elif os.path.exists("/usr/bin/vim"):
         editor = "/usr/bin/vim"
     else:
-        print "Could not load an editor.  Please define EDITOR or VISAUL"
+        eprint("Could not load an editor.  Please define EDITOR or VISAUL")
         sys.exit()
 
     call([editor, DEFAULT_FILE])
@@ -125,7 +130,7 @@ def main(argv):
         username = os.environ['JIRA_USERNAME']
         password = os.environ['JIRA_PASSWORD']
     except KeyError:
-        print "Forgot to export JIRA_USERNAME and JIRA_PASSWORD?"
+        eprint("Forgot to export JIRA_USERNAME and JIRA_PASSWORD?")
         sys.exit()
 
     credentials=(username, password)
@@ -134,7 +139,7 @@ def main(argv):
     exclude_stories = False
     if args.x:
         if not args.c:
-            print "Parameter '-x' can only be used together with '-c'"
+            eprint("Parameter '-x' can only be used together with '-c'")
             sys.exit()
         exclude_stories = True
 
@@ -161,14 +166,14 @@ def main(argv):
     myissue = "";
     mycomment = "";
 
-    print "Information to update is as follows:"
-    print "================================================================================"
+    print("Information to update is as follows:")
+    print("================================================================================")
     for l in status:
-        print l.strip()
-    print "================================================================================"
+        print(l.strip())
+    print("================================================================================")
 
     if should_update() == "n":
-        print "No change, nothing has been updated!"
+        print("No change, nothing has been updated!")
         sys.exit()
 
     # State to keep track of whether we are in an issue or a comment
@@ -191,7 +196,7 @@ def main(argv):
     if len(mycomment) > 0:
         update_jira(jira, myissue, mycomment)
 
-    print "Successfully updated your Jira tickets!"
+    print("Successfully updated your Jira tickets!")
 
 if __name__ == "__main__":
         main(sys.argv)
