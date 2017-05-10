@@ -33,6 +33,11 @@ $ wget https://raw.githubusercontent.com/jbech-linaro/jipdate/master/jipdate.py
 $ sudo pip install jira
 ```
 
+**Note** On recent MAC OS X you may have to run
+```bash
+$ sudo  pip install --user --upgrade jira
+```
+
 In case you have both Python 2 and Python 3 installed at the same machine you
 will eventually need to run with `pip2` instead.
 ```bash
