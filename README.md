@@ -3,17 +3,21 @@
 ## Parameters to the script
 
 ```
-usage: jipdate.py [-h] [-c] [-e] [-x]
+usage: jipdate.py [-h] [-q] [-e] [-f FILE] [-v] [-x] [--all]
 
 Script used to update comments in Jira
 
 optional arguments:
-  -h, --help  show this help message and exit
-  -c          Gather all Jira issue(s) assigned to you into the
-              status_update.txt file
-  -e          Use the EDITOR instead of the status_update.txt file
-  -x          Enabling this flag will EXCLUDE stories. Used in combination
-              with "-c"
+  -h, --help            show this help message and exit
+  -q                    Query Jira for issue(s) assigned to you
+  -e                    Only include epics (no initiatives or stories). Used
+                        in combination with "-c"
+  -f FILE, --file FILE  file to use containing a status update(s)
+  -v                    Output some verbose debugging info
+  -x                    EXCLUDE stories from gathered Jira issues. Used in
+                        combination with "-c"
+  --all                 Load all Jira issues, not just the once marked in
+                        progress.
 ```
 
 ## Installation
@@ -116,14 +120,12 @@ $ export JIRA_PASSWORD="my-super-secret-password"
 ```
 
 ### 3. Update Jira!
-Run the script from the folder where you have your `status_update.txt` file.
+Simply run the script (with the different arguments)
 ```bash
-$ cd "path-to-my/status_update.txt" folder
 $ ./jipdate.py
 ```
 or if you have the script in the `$PATH`
 ```bash
-$ cd "path-to-my/status_update.txt" folder
 $ jipdate.py
 ```
 
