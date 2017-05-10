@@ -44,6 +44,9 @@ def get_args():
             help='EXCLUDE stories from gathered Jira issues. Used in combination \
             with "-c"')
 
+    parser.add_argument('--all', required=False, action="store_true", \
+            default=False, \
+            help='Load all Jira issues, not just the once marked in progress.')
 
     return parser.parse_args()
 
@@ -71,15 +74,22 @@ This is the status update from me for the last week.
 Cheers!
 """
 
-def get_jira_issues(jira, exclude_stories, use_editor):
+def get_jira_issues(jira, exclude_stories, epics_only, all_status, use_editor):
     global DEFAULT_FILE
 
-    issue_type = "issuetype in (Epic, Initiative"
-    if not exclude_stories:
-        issue_type = issue_type + ", Story"
-    issue_type = issue_type + ") AND "
+    issue_types = ["Epic"]
+    if not epics_only:
+        issue_types.append("Initiative")
+        if not exclude_stories:
+            issue_types.append("Story")
+    issue_type = "issuetype in (%s)" % ", ".join(issue_types)
 
-    jql = issue_type + "assignee = currentUser() AND status not in (Resolved, Closed)"
+    status = "status in (\"In Progress\")"
+    if all_status:
+        status = "status not in (Resolved, Closed)"
+
+    jql = "%s AND assignee = currentUser() AND %s" % (issue_type, status)
+    print(jql)
     my_issues = jira.search_issues(jql)
     msg = message_header + get_my_name() + "\n\n"
 
@@ -197,15 +207,15 @@ def main(argv):
     credentials=(username, password)
     jira = JIRA(server, basic_auth=credentials)
 
-    exclude_stories = False
-    if args.x:
+    exclude_stories = args.x
+    epics_only = args.e
+    if args.x or args.e:
         if not args.c:
-            eprint("Parameter '-x' can only be used together with '-c'")
+            eprint("Arguments '-x' and '-e' can only be used together with '-c'")
             sys.exit()
-        exclude_stories = True
 
     if args.c:
-        get_jira_issues(jira, exclude_stories, args.i)
+        get_jira_issues(jira, exclude_stories, epics_only, args.all, args.i)
         # Only continue if we run directly in the editor
         if not args.i:
             sys.exit()

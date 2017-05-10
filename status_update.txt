@@ -1,22 +1,27 @@
-Hi all,
+Hi,
 
-This is the status update from me for this week. I've been mostly working with
-X, but I did find some time to look into Y also. Please find the status updates
-for each and every Jira issue I'm working with below.
+This is the status update from me for the last week.
 
-// Cheers
-Joakim!
+Cheers!
+Christoffer Dall
 
-[SWG-25]
-This is my superduper comment
+[VIRT-184]
+# Header: KVM/ARM Nested Virtualization Support
+# Type: Epic
+No updates since last week.
 
-It can contain empty lines        many space, and even references
-to other issues like [LHG-52].
+[VIRT-159]
+# Header: KVM: Support Virtual and Physical Timers in Guests
+# Type: Epic
+No updates since last week.
 
-[SWG-26]
-This issue is currently blocked.
+[VIRT-158]
+# Header: KVM: Redesign and optimize for VHE
+# Type: Epic
+No updates since last week.
 
-But we intend to work with it after issue [SWG-200].
+[VIRT-17]
+# Header: KVM Upstream Maintainership
+# Type: Epic
+No updates since last week.
 
-[SWG-27]
-No updates this week
