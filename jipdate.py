@@ -191,7 +191,9 @@ def main(argv):
             mycomment = ""
             state = "comment"
         else:
-            mycomment += line
+            # Don't add lines with comments
+            if (line[0] != "#"):
+                mycomment += line
 
     if len(mycomment) > 0:
         update_jira(jira, myissue, mycomment)
