@@ -110,6 +110,7 @@ def should_update():
         else:
             print("Incorrect input: %s" % answer)
 
+################################################################################
 def open_editor(filename):
     if "EDITOR" in os.environ:
         editor = os.environ['EDITOR']
@@ -125,35 +126,8 @@ def open_editor(filename):
 
     call([editor, DEFAULT_FILE])
 
-
 ################################################################################
-def main(argv):
-    args = get_args()
-    try:
-        username = os.environ['JIRA_USERNAME']
-        password = os.environ['JIRA_PASSWORD']
-    except KeyError:
-        eprint("Forgot to export JIRA_USERNAME and JIRA_PASSWORD?")
-        sys.exit()
-
-    credentials=(username, password)
-    jira = JIRA(server, basic_auth=credentials)
-
-    exclude_stories = False
-    if args.x:
-        if not args.c:
-            eprint("Parameter '-x' can only be used together with '-c'")
-            sys.exit()
-        exclude_stories = True
-
-    if args.c:
-        get_jira_issues(jira, exclude_stories, args.e)
-        # Only continue if we run directly in the editor
-        if not args.e:
-            sys.exit()
-        else:
-            open_editor(DEFAULT_FILE)
-
+def parse_status_file(jira, filename):
     # Regexp to match Jira issue on a single line, i.e:
     # [SWG-28]
     # [LITE-32]
@@ -202,6 +176,38 @@ def main(argv):
         update_jira(jira, myissue, mycomment)
 
     print("Successfully updated your Jira tickets!")
+
+
+################################################################################
+def main(argv):
+    args = get_args()
+    try:
+        username = os.environ['JIRA_USERNAME']
+        password = os.environ['JIRA_PASSWORD']
+    except KeyError:
+        eprint("Forgot to export JIRA_USERNAME and JIRA_PASSWORD?")
+        sys.exit()
+
+    credentials=(username, password)
+    jira = JIRA(server, basic_auth=credentials)
+
+    exclude_stories = False
+    if args.x:
+        if not args.c:
+            eprint("Parameter '-x' can only be used together with '-c'")
+            sys.exit()
+        exclude_stories = True
+
+    if args.c:
+        get_jira_issues(jira, exclude_stories, args.e)
+        # Only continue if we run directly in the editor
+        if not args.e:
+            sys.exit()
+        else:
+            open_editor(DEFAULT_FILE)
+
+    parse_status_file(jira, DEFAULT_FILE)
+
 
 if __name__ == "__main__":
         main(sys.argv)
