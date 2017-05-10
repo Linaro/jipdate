@@ -32,12 +32,18 @@ def get_args():
 
     parser.add_argument('-e', required=False, action="store_true", \
             default=False, \
-            help='Use the EDITOR instead of the status_update.txt file')
+            help='Only include epics (no initiatives or stories). Used in combination \
+            with "-c"')
+
+    parser.add_argument('-i', required=False, action="store_true", \
+            default=False, \
+            help='Be interactive and open an editor instead of loading status_update.txt')
 
     parser.add_argument('-x', required=False, action="store_true", \
             default=False, \
-            help='Enabling this flag will EXCLUDE stories. Used in combination \
+            help='EXCLUDE stories from gathered Jira issues. Used in combination \
             with "-c"')
+
 
     return parser.parse_args()
 
@@ -199,9 +205,9 @@ def main(argv):
         exclude_stories = True
 
     if args.c:
-        get_jira_issues(jira, exclude_stories, args.e)
+        get_jira_issues(jira, exclude_stories, args.i)
         # Only continue if we run directly in the editor
-        if not args.e:
+        if not args.i:
             sys.exit()
         else:
             open_editor(DEFAULT_FILE)
