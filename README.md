@@ -125,3 +125,7 @@ $ jipdate.py
 **Note**, the script is by default configured to use the "sandbox" server. So if
 you intend to use this on the real linaro production server, then you should
 update the `server` variable in the script accordingly.
+
+**Note**, the script relies on running Python 2, and not Python 3.  If you're
+using Arch Linux you may have to manually tweak the script to execute
+'/usr/bin/env python2' instead.
