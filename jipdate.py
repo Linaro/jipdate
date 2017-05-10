@@ -102,6 +102,22 @@ def should_update():
         else:
             print "Incorrect input: %s" % answer
 
+def open_editor(filename):
+    if "EDITOR" in os.environ:
+        editor = os.environ['EDITOR']
+    elif "VISUAL" in os.environ:
+        editor = os.environ['VISUAL']
+    elif os.path.exists("/usr/bin/editor"):
+        editor = "/usr/bin/editor"
+    elif os.path.exists("/usr/bin/vim"):
+        editor = "/usr/bin/vim"
+    else:
+        print "Could not load an editor.  Please define EDITOR or VISAUL"
+        sys.exit()
+
+    call([editor, DEFAULT_FILE])
+
+
 ################################################################################
 def main(argv):
     args = get_args()
@@ -128,7 +144,7 @@ def main(argv):
         if not args.e:
             sys.exit()
         else:
-            call([os.environ['EDITOR'], DEFAULT_FILE])
+            open_editor(DEFAULT_FILE)
 
     # Regexp to match Jira issue on a single line, i.e:
     # [SWG-28]
