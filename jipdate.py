@@ -22,6 +22,10 @@ DEFAULT_FILE = "status_update.txt"
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+def vprint(*args, **kwargs):
+    if verbose:
+        print(*args, file=sys.stdout, **kwargs)
+
 def get_args():
     parser = ArgumentParser(description='Script used to update comments in Jira')
 
@@ -38,6 +42,10 @@ def get_args():
     parser.add_argument('-i', required=False, action="store_true", \
             default=False, \
             help='Be interactive and open an editor instead of loading status_update.txt')
+
+    parser.add_argument('-v', required=False, action="store_true", \
+            default=False, \
+            help='Output some verbose debugging info')
 
     parser.add_argument('-x', required=False, action="store_true", \
             default=False, \
@@ -59,10 +67,10 @@ def get_my_name():
 ################################################################################
 
 def update_jira(jira, i, c):
-    print("Updating Jira issue: %s with comment:" % i)
-    print("-- 8< --------------------------------------------------------------------------")
-    print("%s" % c)
-    print("-- >8 --------------------------------------------------------------------------\n\n")
+    vprint("Updating Jira issue: %s with comment:" % i)
+    vprint("-- 8< --------------------------------------------------------------------------")
+    vprint("%s" % c)
+    vprint("-- >8 --------------------------------------------------------------------------\n\n")
     jira.add_comment(i, c)
 
 ################################################################################
@@ -89,7 +97,8 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, use_editor):
         status = "status not in (Resolved, Closed)"
 
     jql = "%s AND assignee = currentUser() AND %s" % (issue_type, status)
-    print(jql)
+    vprint(jql)
+
     my_issues = jira.search_issues(jql)
     msg = message_header + get_my_name() + "\n\n"
 
@@ -101,9 +110,9 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, use_editor):
     DEFAULT_FILE = f.name
 
     f.write(msg)
-    print("Found issue:")
+    vprint("Found issue:")
     for issue in my_issues:
-        print("%s : %s" % (issue, issue.fields.summary))
+        vprint("%s : %s" % (issue, issue.fields.summary))
         f.write("[%s]\n" % issue)
         f.write("# Header: %s\n" % issue.fields.summary)
         f.write("# Type: %s\n" % issue.fields.issuetype)
@@ -142,6 +151,12 @@ def open_editor(filename):
 
     call([editor, DEFAULT_FILE])
 
+def print_status(status):
+    print("This is your status:")
+    print("\n---\n")
+    print("\n".join(l.strip() for l in status))
+
+
 ################################################################################
 def parse_status_file(jira, filename):
     # Regexp to match Jira issue on a single line, i.e:
@@ -153,50 +168,55 @@ def parse_status_file(jira, filename):
     # Contains the status text, it could be a file or a status email
     status = ""
 
-    with open(DEFAULT_FILE) as f:
+    with open(filename) as f:
         status = f.readlines()
 
     myissue = "";
     mycomment = "";
 
-    print("Information to update is as follows:")
-    print("================================================================================")
-    for l in status:
-        print(l.strip())
-    print("================================================================================")
-
-    if should_update() == "n":
-        print("No change, nothing has been updated!")
-        sys.exit()
-
-    # State to keep track of whether we are in an issue or a comment
-    state = "issue"
-
+    # build list of {issue-key,comment} tuples found in status
+    issue_comments = []
     for line in status:
         # New issue?
         match = re.search(regex, line)
         if match:
-            if state == "comment":
-                update_jira(jira, myissue, mycomment)
-                state = "issue"
-
             myissue = match.group(1)
-            mycomment = ""
-            state = "comment"
+            issue_comments.append((myissue, ""))
         else:
             # Don't add lines with comments
-            if (line[0] != "#"):
-                mycomment += line
+            if (line[0] != "#" and issue_comments):
+                (i,c) = issue_comments[-1]
+                issue_comments[-1] = (i, c + line)
 
-    if len(mycomment) > 0:
-        update_jira(jira, myissue, mycomment)
+    print("These JIRA cards will be updated as follows:\n")
+    for (idx,t) in enumerate(issue_comments):
+        (issue,comment) = issue_comments[idx]
 
-    print("Successfully updated your Jira tickets!")
+        # Strip beginning  and trailing blank lines
+        comment = comment.strip()
+        issue_comments[idx] = (issue, comment)
+        print("[%s]\n  %s" % (issue, "\n  ".join(comment.splitlines())))
+    print("")
+
+    if should_update() == "n":
+        print("No change, Jira was not updated!\n")
+        print_status(status)
+        sys.exit()
+
+    # if we found something, let's update jira
+    for (issue,comment) in issue_comments:
+        update_jira(jira, issue, comment)
+
+    print("Successfully updated your Jira tickets!\n")
+    print_status(status)
 
 
 ################################################################################
 def main(argv):
+    global verbose
+
     args = get_args()
+    verbose=args.v
     try:
         username = os.environ['JIRA_USERNAME']
         password = os.environ['JIRA_PASSWORD']
