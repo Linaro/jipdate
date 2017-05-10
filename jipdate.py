@@ -38,15 +38,15 @@ def get_args():
             help='Only include epics (no initiatives or stories). Used in combination \
             with "-c"')
 
-    parser.add_argument('-i', required=False, action="store_true", \
+    parser.add_argument('-f', '--file', required=False, action="store", \
             default=False, \
-            help='Be interactive and open an editor instead of loading status_update.txt')
+            help='file to use containing a status update(s)')
 
     parser.add_argument('-v', required=False, action="store_true", \
             default=False, \
             help='Output some verbose debugging info')
 
-    parser.add_argument('-x', required=False, action="store_true", \
+    parser.add_argument('-x' , required=False, action="store_true", \
             default=False, \
             help='EXCLUDE stories from gathered Jira issues. Used in combination \
             with "-c"')
@@ -81,9 +81,7 @@ This is the status update from me for the last week.
 Cheers!
 """
 
-def get_jira_issues(jira, exclude_stories, epics_only, all_status, use_editor):
-    global DEFAULT_FILE
-
+def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename):
     issue_types = ["Epic"]
     if not epics_only:
         issue_types.append("Initiative")
@@ -101,12 +99,8 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, use_editor):
     my_issues = jira.search_issues(jql)
     msg = message_header + get_my_name() + "\n\n"
 
-    if use_editor:
-        f = tempfile.NamedTemporaryFile(delete=False)
-    else:
-        f = open(DEFAULT_FILE, "w")
-
-    DEFAULT_FILE = f.name
+    f = open_file(filename)
+    filename = f.name
 
     f.write(msg)
     vprint("Found issue:")
@@ -118,11 +112,8 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, use_editor):
         f.write("# Status: %s\n" % issue.fields.status)
         f.write("No updates since last week.\n\n")
 
-    if not use_editor:
-        print("\n" + DEFAULT_FILE + " has been prepared with all of your open\n" + \
-              "issues. Manually edit the file, then re-run this script without\n" + \
-              "the '-c' parameter to update your issues.")
     f.close()
+    return filename
 
 ################################################################################
 def should_update():
@@ -148,13 +139,12 @@ def open_editor(filename):
         eprint("Could not load an editor.  Please define EDITOR or VISAUL")
         sys.exit()
 
-    call([editor, DEFAULT_FILE])
+    call([editor, filename])
 
 def print_status(status):
     print("This is your status:")
     print("\n---\n")
     print("\n".join(l.strip() for l in status))
-
 
 ################################################################################
 def parse_status_file(jira, filename):
@@ -209,10 +199,17 @@ def parse_status_file(jira, filename):
     print("Successfully updated your Jira tickets!\n")
     print_status(status)
 
+def open_file(filename):
+    vprint("filename: %s\n" % filename)
+    if filename:
+        return open(filename, "w")
+    else:
+        return tempfile.NamedTemporaryFile(delete=False)
 
 ################################################################################
 def main(argv):
     global verbose
+    filename = DEFAULT_FILE;
 
     args = get_args()
     verbose=args.v
@@ -234,15 +231,10 @@ def main(argv):
             sys.exit()
 
     if args.q:
-        get_jira_issues(jira, exclude_stories, epics_only, args.all, args.i)
-        # Only continue if we run directly in the editor
-        if not args.i:
-            sys.exit()
-        else:
-            open_editor(DEFAULT_FILE)
+        filename = get_jira_issues(jira, exclude_stories, epics_only, args.all, args.file)
 
-    parse_status_file(jira, DEFAULT_FILE)
-
+    open_editor(filename)
+    parse_status_file(jira, filename)
 
 if __name__ == "__main__":
         main(sys.argv)
