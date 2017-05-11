@@ -34,11 +34,12 @@ def get_parser():
     parser.add_argument('-e', required=False, action="store_true", \
             default=False, \
             help='Only include epics (no initiatives or stories). Used in combination \
-            with "-c"')
+            with "-q"')
 
     parser.add_argument('-f', '--file', required=False, action="store", \
             default=None, \
-            help='file to use containing a status update(s)')
+            help='Load status update from FILE.  NOTE: -q will overwrite the \
+            content of FILE')
 
     parser.add_argument('-v', required=False, action="store_true", \
             default=False, \
@@ -47,7 +48,7 @@ def get_parser():
     parser.add_argument('-x', required=False, action="store_true", \
             default=False, \
             help='EXCLUDE stories from gathered Jira issues. Used in combination \
-            with "-c"')
+            with "-q"')
 
     parser.add_argument('--all', required=False, action="store_true", \
             default=False, \
