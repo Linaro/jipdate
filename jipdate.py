@@ -220,15 +220,9 @@ def open_file(filename):
     else:
         return tempfile.NamedTemporaryFile(delete=False)
 
-################################################################################
-def main(argv):
-    global verbose
+def get_jira_instance(use_test_server):
     global server
 
-    parser = get_parser()
-    args = parser.parse_args()
-
-    verbose=args.v
     try:
         username = os.environ['JIRA_USERNAME']
         password = os.environ['JIRA_PASSWORD']
@@ -238,9 +232,20 @@ def main(argv):
 
     credentials=(username, password)
 
-    if args.t:
+    if use_test_server:
         server = TEST_SERVER
-    jira = JIRA(server, basic_auth=credentials)
+
+    return JIRA(server, basic_auth=credentials)
+
+################################################################################
+def main(argv):
+    global verbose
+
+    parser = get_parser()
+    args = parser.parse_args()
+
+    verbose=args.v
+    jira = get_jira_instance(args.t)
 
     exclude_stories = args.x
     epics_only = args.e
