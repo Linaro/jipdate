@@ -3,7 +3,7 @@
 ## Parameters to the script
 
 ```
-usage: jipdate.py [-h] [-q] [-e] [-f FILE] [-v] [-x] [--all]
+usage: jipdate.py [-h] [-q] [-e] [-f FILE] [-t] [-v] [-x] [--all]
 
 Script used to update comments in Jira
 
@@ -13,6 +13,7 @@ optional arguments:
   -e                    Only include epics (no initiatives or stories). Used
                         in combination with "-c"
   -f FILE, --file FILE  file to use containing a status update(s)
+  -t                    Use the test server
   -v                    Output some verbose debugging info
   -x                    EXCLUDE stories from gathered Jira issues. Used in
                         combination with "-c"
@@ -129,9 +130,9 @@ or if you have the script in the `$PATH`
 $ jipdate.py
 ```
 
-**Note**, the script is by default configured to use the "sandbox" server. So if
-you intend to use this on the real linaro production server, then you should
-update the `server` variable in the script accordingly.
+**Note**, the script is by default configured to use the **official** Jira
+server. If you intend to just test the script without affecting the official
+Jira server, then you shall use the `-t` parameter.
 
 **Note**, the script relies on running Python 2, and not Python 3.  If you're
 using Arch Linux you may have to manually tweak the script to execute

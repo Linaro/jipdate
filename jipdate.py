@@ -12,10 +12,12 @@ from subprocess import call
 import sys
 
 # Sandbox server
-server = 'https://dev-projects.linaro.org'
+TEST_SERVER = 'https://dev-projects.linaro.org'
 
 # Production server, comment out this in case you want to use the real server
-#server = 'https://projects.linaro.org'
+PRODUCTION_SERVER = 'https://projects.linaro.org'
+
+server = PRODUCTION_SERVER
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -40,6 +42,10 @@ def get_parser():
             default=None, \
             help='Load status update from FILE.  NOTE: -q will overwrite the \
             content of FILE')
+
+    parser.add_argument('-t', required=False, action="store_true", \
+            default=False, \
+            help='Use the test server')
 
     parser.add_argument('-v', required=False, action="store_true", \
             default=False, \
@@ -116,7 +122,16 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename):
 
 ################################################################################
 def should_update():
+    global server
     while True:
+        target = ""
+        if server == PRODUCTION_SERVER:
+            target = "OFFICAL!"
+        elif server == TEST_SERVER:
+            target = "TEST"
+
+        print("Server to update: %s" % target)
+        print(" %s\n" % server);
         answer = raw_input("Sure you want to update Jira with the information " +
                            "above? [y/n] ").lower().strip()
         if answer in set(['y', 'n']):
@@ -208,6 +223,7 @@ def open_file(filename):
 ################################################################################
 def main(argv):
     global verbose
+    global server
 
     parser = get_parser()
     args = parser.parse_args()
@@ -221,6 +237,9 @@ def main(argv):
         sys.exit()
 
     credentials=(username, password)
+
+    if args.t:
+        server = TEST_SERVER
     jira = JIRA(server, basic_auth=credentials)
 
     exclude_stories = args.x
