@@ -245,6 +245,11 @@ def main(argv):
     args = parser.parse_args()
 
     verbose=args.v
+    if not args.file and not args.q:
+        eprint("No file provided and not in query mode\n")
+        parser.print_help()
+        sys.exit()
+
     jira = get_jira_instance(args.t)
 
     exclude_stories = args.x
@@ -259,9 +264,7 @@ def main(argv):
     elif args.file is not None:
         filename = args.file
     else:
-        eprint("No file provided and not in query mode\n")
-        parser.print_help()
-        sys.exit()
+        eprint("This should not happen")
 
     open_editor(filename)
     parse_status_file(jira, filename)
