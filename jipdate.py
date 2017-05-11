@@ -150,7 +150,7 @@ def open_editor(filename):
     elif os.path.exists("/usr/bin/vim"):
         editor = "/usr/bin/vim"
     else:
-        eprint("Could not load an editor.  Please define EDITOR or VISAUL")
+        eprint("Could not load an editor.  Please define EDITOR or VISUAL")
         sys.exit()
 
     call([editor, filename])
