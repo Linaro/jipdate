@@ -47,6 +47,11 @@ def get_parser():
             default=False, \
             help='Use the test server')
 
+    parser.add_argument('-u', '--user', required=False, action="store", \
+            default=None, \
+            help='Query Jira with another Jira username \
+            (first.last@linaro.org)')
+
     parser.add_argument('-v', required=False, action="store_true", \
             default=False, \
             help='Output some verbose debugging info')
@@ -86,7 +91,8 @@ This is the status update from me for the last week.
 Cheers!
 """
 
-def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename):
+def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
+                    user):
     issue_types = ["Epic"]
     if not epics_only:
         issue_types.append("Initiative")
@@ -98,7 +104,12 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename):
     if all_status:
         status = "status not in (Resolved, Closed)"
 
-    jql = "%s AND assignee = currentUser() AND %s" % (issue_type, status)
+    if user is None:
+        user = "currentUser()"
+    else:
+        user = "\"%s\"" % user
+
+    jql = "%s AND assignee = %s AND %s" % (issue_type, user, status)
     vprint(jql)
 
     my_issues = jira.search_issues(jql)
@@ -260,7 +271,8 @@ def main(argv):
             sys.exit()
 
     if args.q:
-        filename = get_jira_issues(jira, exclude_stories, epics_only, args.all, args.file)
+        filename = get_jira_issues(jira, exclude_stories, epics_only, \
+                                   args.all, args.file, args.user)
     elif args.file is not None:
         filename = args.file
     else:
