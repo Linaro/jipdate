@@ -17,8 +17,6 @@ server = 'https://dev-projects.linaro.org'
 # Production server, comment out this in case you want to use the real server
 #server = 'https://projects.linaro.org'
 
-DEFAULT_FILE = "status_update.txt"
-
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -26,7 +24,7 @@ def vprint(*args, **kwargs):
     if verbose:
         print(*args, file=sys.stdout, **kwargs)
 
-def get_args():
+def get_parser():
     parser = ArgumentParser(description='Script used to update comments in Jira')
 
     parser.add_argument('-q', required=False, action="store_true", \
@@ -39,14 +37,14 @@ def get_args():
             with "-c"')
 
     parser.add_argument('-f', '--file', required=False, action="store", \
-            default=False, \
+            default=None, \
             help='file to use containing a status update(s)')
 
     parser.add_argument('-v', required=False, action="store_true", \
             default=False, \
             help='Output some verbose debugging info')
 
-    parser.add_argument('-x' , required=False, action="store_true", \
+    parser.add_argument('-x', required=False, action="store_true", \
             default=False, \
             help='EXCLUDE stories from gathered Jira issues. Used in combination \
             with "-c"')
@@ -55,7 +53,7 @@ def get_args():
             default=False, \
             help='Load all Jira issues, not just the once marked in progress.')
 
-    return parser.parse_args()
+    return parser
 
 ################################################################################
 
@@ -209,9 +207,10 @@ def open_file(filename):
 ################################################################################
 def main(argv):
     global verbose
-    filename = DEFAULT_FILE;
 
-    args = get_args()
+    parser = get_parser()
+    args = parser.parse_args()
+
     verbose=args.v
     try:
         username = os.environ['JIRA_USERNAME']
@@ -232,6 +231,12 @@ def main(argv):
 
     if args.q:
         filename = get_jira_issues(jira, exclude_stories, epics_only, args.all, args.file)
+    elif args.file is not None:
+        filename = args.file
+    else:
+        eprint("No file provided and not in query mode\n")
+        parser.print_help()
+        sys.exit()
 
     open_editor(filename)
     parse_status_file(jira, filename)
