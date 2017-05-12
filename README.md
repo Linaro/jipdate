@@ -27,13 +27,13 @@ optional arguments:
 ## Installation
 #### 1. Clone this git
 ```bash
-$ git clone https://github.com/jbech-linaro/jipdate.git
+$ git clone https://github.com/Linaro/jipdate.git
 ```
 
 alternatively download it directly to a folder in your `$PATH`, for example:
 ```bash
 $ cd $HOME/bin
-$ wget https://raw.githubusercontent.com/jbech-linaro/jipdate/master/jipdate.py
+$ wget https://raw.githubusercontent.com/Linaro/jipdate/master/jipdate.py
 ```
 
 #### 2. Get the Jira package for Python
