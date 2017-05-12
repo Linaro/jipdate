@@ -79,6 +79,12 @@ def add_domain(user):
         user = user + "@linaro.org"
     return user
 
+
+def email_to_name(email):
+    """ Converts 'first.last@linaro.org' to 'First Last'. """
+    n = email.split("@")[0].title()
+    return n.replace(".", " ")
+
 ################################################################################
 # Argument parser
 ################################################################################
@@ -127,12 +133,6 @@ def get_parser():
 ################################################################################
 # Jira functions
 ################################################################################
-def get_my_name():
-    """ Converts 'first.last@linaro.org' to 'First Last'. """
-    n = os.environ['JIRA_USERNAME'].split("@")[0].title()
-    return n.replace(".", " ")
-
-
 def update_jira(jira, i, c):
     """
     This is the function that do the actual updates to Jira and in this case it
@@ -178,7 +178,7 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
     vprint(jql)
 
     my_issues = jira.search_issues(jql)
-    msg = message_header + get_my_name() + "\n\n"
+    msg = message_header + email_to_name(os.environ['JIRA_USERNAME']) + "\n\n"
 
     f = open_file(filename)
     filename = f.name
