@@ -3,7 +3,7 @@
 ## Parameters to the script
 
 ```
-usage: jipdate.py [-h] [-q] [-e] [-f FILE] [-t] [-v] [-x] [--all]
+usage: jipdate.py [-h] [-q] [-e] [-f FILE] [-t] [-u USER] [-v] [-x] [--all]
 
 Script used to update comments in Jira
 
@@ -11,12 +11,15 @@ optional arguments:
   -h, --help            show this help message and exit
   -q                    Query Jira for issue(s) assigned to you
   -e                    Only include epics (no initiatives or stories). Used
-                        in combination with "-c"
-  -f FILE, --file FILE  file to use containing a status update(s)
+                        in combination with "-q"
+  -f FILE, --file FILE  Load status update from FILE. NOTE: -q will overwrite
+                        the content of FILE
   -t                    Use the test server
+  -u USER, --user USER  Query Jira with another Jira username (first.last or
+                        first.last@linaro.org)
   -v                    Output some verbose debugging info
   -x                    EXCLUDE stories from gathered Jira issues. Used in
-                        combination with "-c"
+                        combination with "-q"
   --all                 Load all Jira issues, not just the once marked in
                         progress.
 ```

@@ -50,7 +50,7 @@ def get_parser():
     parser.add_argument('-u', '--user', required=False, action="store", \
             default=None, \
             help='Query Jira with another Jira username \
-            (first.last@linaro.org)')
+            (first.last or first.last@linaro.org)')
 
     parser.add_argument('-v', required=False, action="store_true", \
             default=False, \
@@ -73,7 +73,13 @@ def get_my_name():
     n = os.environ['JIRA_USERNAME'].split("@")[0].title()
     return n.replace(".", " ")
 
-################################################################################
+def add_domain(user):
+    """ Helper function that appends @linaro.org to the username. It does
+    nothing if it is already included.
+    """
+    if '@' not in user:
+        user = user + "@linaro.org"
+    return user
 
 def update_jira(jira, i, c):
     vprint("Updating Jira issue: %s with comment:" % i)
@@ -81,8 +87,6 @@ def update_jira(jira, i, c):
     vprint("%s" % c)
     vprint("-- >8 --------------------------------------------------------------------------\n\n")
     jira.add_comment(i, c)
-
-################################################################################
 
 message_header = """Hi,
 
@@ -107,7 +111,7 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
     if user is None:
         user = "currentUser()"
     else:
-        user = "\"%s\"" % user
+        user = "\"%s\"" % add_domain(user)
 
     jql = "%s AND assignee = %s AND %s" % (issue_type, user, status)
     vprint(jql)
