@@ -1,32 +1,35 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+
+from argparse import ArgumentParser
+from jira import JIRA
+from subprocess import call
+
 import json
 import os
 import re
 import sys
-import tempfile
-from argparse import ArgumentParser
-from jira import JIRA
-from subprocess import call
 import sys
+import tempfile
 
-# Sandbox server
 TEST_SERVER = 'https://dev-projects.linaro.org'
-
-# Production server, comment out this in case you want to use the real server
 PRODUCTION_SERVER = 'https://projects.linaro.org'
-
 server = PRODUCTION_SERVER
 
 def eprint(*args, **kwargs):
+    """ Helper function that prints on stderr. """
     print(*args, file=sys.stderr, **kwargs)
 
+
 def vprint(*args, **kwargs):
+    """ Helper function that prints when verbose has been enabled. """
     if verbose:
         print(*args, file=sys.stdout, **kwargs)
 
+
 def get_parser():
+    """ Takes care of script argument parsing. """
     parser = ArgumentParser(description='Script used to update comments in Jira')
 
     parser.add_argument('-q', required=False, action="store_true", \
@@ -67,26 +70,34 @@ def get_parser():
 
     return parser
 
-################################################################################
 
 def get_my_name():
+    """ Converts 'first.last@linaro.org' to 'First Last'. """
     n = os.environ['JIRA_USERNAME'].split("@")[0].title()
     return n.replace(".", " ")
 
+
 def add_domain(user):
-    """ Helper function that appends @linaro.org to the username. It does
-    nothing if it is already included.
+    """
+    Helper function that appends @linaro.org to the username. It does nothing if
+    it is already included.
     """
     if '@' not in user:
         user = user + "@linaro.org"
     return user
 
+
 def update_jira(jira, i, c):
+    """
+    This is the function that do the actual updates to Jira and in this case it
+    is adding comments to a certain issue.
+    """
     vprint("Updating Jira issue: %s with comment:" % i)
     vprint("-- 8< --------------------------------------------------------------------------")
     vprint("%s" % c)
     vprint("-- >8 --------------------------------------------------------------------------\n\n")
     jira.add_comment(i, c)
+
 
 message_header = """Hi,
 
@@ -97,6 +108,10 @@ Cheers!
 
 def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
                     user):
+    """
+    Query Jira and then creates a status update file (either temporary or named)
+    containing all information found from the JQL query.
+    """
     issue_types = ["Epic"]
     if not epics_only:
         issue_types.append("Initiative")
@@ -135,8 +150,9 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
     f.close()
     return filename
 
-################################################################################
+
 def should_update():
+    """ A yes or no dialogue. """
     global server
     while True:
         target = ""
@@ -154,8 +170,12 @@ def should_update():
         else:
             print("Incorrect input: %s" % answer)
 
-################################################################################
+
 def open_editor(filename):
+    """
+    Function that tries to find the best suited editor to use and then
+    opens the status file in the editor.
+    """
     if "EDITOR" in os.environ:
         editor = os.environ['EDITOR']
     elif "VISUAL" in os.environ:
@@ -170,13 +190,20 @@ def open_editor(filename):
 
     call([editor, filename])
 
+
 def print_status(status):
+    """ Helper function printing your status """
     print("This is your status:")
     print("\n---\n")
     print("\n".join(l.strip() for l in status))
 
-################################################################################
+
 def parse_status_file(jira, filename):
+    """
+    The main parsing function, which will decide what should go into the actual
+    Jira call. This for example removes the beginning until it finds a
+    standalone [ISSUE] tag. It will also remove all comments prefixed with '#'.
+    """
     # Regexp to match Jira issue on a single line, i.e:
     # [SWG-28]
     # [LITE-32]
@@ -228,14 +255,24 @@ def parse_status_file(jira, filename):
     print("Successfully updated your Jira tickets!\n")
     print_status(status)
 
+
 def open_file(filename):
+    """
+    This will open the user provided file and if there has not been any file
+    provided it will create and open a temporary file instead.
+    """
     vprint("filename: %s\n" % filename)
     if filename:
         return open(filename, "w")
     else:
         return tempfile.NamedTemporaryFile(delete=False)
 
+
 def get_jira_instance(use_test_server):
+    """
+    Makes a connection to the Jira server and returns the Jira instance to the
+    caller.
+    """
     global server
 
     try:
@@ -252,7 +289,7 @@ def get_jira_instance(use_test_server):
 
     return JIRA(server, basic_auth=credentials)
 
-################################################################################
+
 def main(argv):
     global verbose
 
@@ -286,4 +323,4 @@ def main(argv):
     parse_status_file(jira, filename)
 
 if __name__ == "__main__":
-        main(sys.argv)
+    main(sys.argv)
