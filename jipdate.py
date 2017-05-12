@@ -196,7 +196,7 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
         f.write("# Header: %s\n" % issue.fields.summary)
         f.write("# Type: %s\n" % issue.fields.issuetype)
         f.write("# Status: %s\n" % issue.fields.status)
-        f.write("No updates since last week.\n\n")
+        f.write("# No updates since last week.\n\n")
 
     f.close()
     return filename
@@ -267,16 +267,23 @@ def parse_status_file(jira, filename):
                 (i,c) = issue_comments[-1]
                 issue_comments[-1] = (i, c + line)
 
+    issue_upload = []
     print("These JIRA cards will be updated as follows:\n")
     for (idx,t) in enumerate(issue_comments):
         (issue,comment) = issue_comments[idx]
 
         # Strip beginning  and trailing blank lines
         comment = comment.strip()
-        issue_comments[idx] = (issue, comment)
+
+        if comment == "":
+            print("[%s] is empty and has been deleted" % (issue))
+            continue
+
+        issue_upload.append((issue, comment))
         print("[%s]\n  %s" % (issue, "\n  ".join(comment.splitlines())))
     print("")
 
+    issue_comments = issue_upload
     if should_update() == "n":
         print("No change, Jira was not updated!\n")
         print_status(status)
