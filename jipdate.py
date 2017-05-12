@@ -128,6 +128,11 @@ def get_parser():
             default=False, \
             help='Load all Jira issues, not just the once marked in progress.')
 
+    parser.add_argument('-r', required=False, action="store_true", \
+            default=False, \
+            help='Only query the status and overwrite the status FILE but do not send it to server\
+            with "-r"')
+
     return parser
 
 ################################################################################
@@ -191,7 +196,7 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
         f.write("# Header: %s\n" % issue.fields.summary)
         f.write("# Type: %s\n" % issue.fields.issuetype)
         f.write("# Status: %s\n" % issue.fields.status)
-        f.write("No updates since last week.\n\n")
+        f.write("# No updates since last week.\n\n")
 
     f.close()
     return filename
@@ -227,7 +232,7 @@ def parse_status_file(jira, filename):
     # [SWG-28]
     # [LITE-32]
     # etc ...
-    regex = r"^\[([A-Z]+-\d+)\]\n$"
+    regex = r"^\[(.*)\]\n$"
 
     # Contains the status text, it could be a file or a status email
     status = ""
@@ -245,23 +250,40 @@ def parse_status_file(jira, filename):
         match = re.search(regex, line)
         if match:
             myissue = match.group(1)
-            issue_comments.append((myissue, ""))
+            validissue = True
+
+            try:
+                issue = jira.issue(myissue)
+            except  Exception as e:
+                if 'Issue Does Not Exist' in e.text:
+                    print ('[{}] :  {}'.format(myissue, e.text))
+                    validissue = False
+
+            if validissue:
+                issue_comments.append((myissue, ""))
         else:
             # Don't add lines with comments
-            if (line[0] != "#" and issue_comments):
+            if (line[0] != "#" and issue_comments and validissue):
                 (i,c) = issue_comments[-1]
                 issue_comments[-1] = (i, c + line)
 
+    issue_upload = []
     print("These JIRA cards will be updated as follows:\n")
     for (idx,t) in enumerate(issue_comments):
         (issue,comment) = issue_comments[idx]
 
         # Strip beginning  and trailing blank lines
         comment = comment.strip()
-        issue_comments[idx] = (issue, comment)
+
+        if comment == "":
+            print("[%s] is empty and has been deleted" % (issue))
+            continue
+
+        issue_upload.append((issue, comment))
         print("[%s]\n  %s" % (issue, "\n  ".join(comment.splitlines())))
     print("")
 
+    issue_comments = issue_upload
     if should_update() == "n":
         print("No change, Jira was not updated!\n")
         print_status(status)
@@ -319,10 +341,16 @@ def main(argv):
         if not args.q:
             eprint("Arguments '-x' and '-e' can only be used together with '-c'")
             sys.exit()
+    if args.r and not args.q:
+        eprint("Arguments '-r' can only be used together with '-q'")
+        sys.exit()
 
     if args.q:
         filename = get_jira_issues(jira, exclude_stories, epics_only, \
                                    args.all, args.file, args.user)
+
+        if args.r:
+            sys.exit()
     elif args.file is not None:
         filename = args.file
     else:
