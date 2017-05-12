@@ -17,6 +17,9 @@ TEST_SERVER = 'https://dev-projects.linaro.org'
 PRODUCTION_SERVER = 'https://projects.linaro.org'
 server = PRODUCTION_SERVER
 
+################################################################################
+# Helper functions
+################################################################################
 def eprint(*args, **kwargs):
     """ Helper function that prints on stderr. """
     print(*args, file=sys.stderr, **kwargs)
@@ -28,6 +31,57 @@ def vprint(*args, **kwargs):
         print(*args, file=sys.stdout, **kwargs)
 
 
+def print_status(status):
+    """ Helper function printing your status """
+    print("This is your status:")
+    print("\n---\n")
+    print("\n".join(l.strip() for l in status))
+
+
+def open_editor(filename):
+    """
+    Function that tries to find the best suited editor to use and then
+    opens the status file in the editor.
+    """
+    if "EDITOR" in os.environ:
+        editor = os.environ['EDITOR']
+    elif "VISUAL" in os.environ:
+        editor = os.environ['VISUAL']
+    elif os.path.exists("/usr/bin/editor"):
+        editor = "/usr/bin/editor"
+    elif os.path.exists("/usr/bin/vim"):
+        editor = "/usr/bin/vim"
+    else:
+        eprint("Could not load an editor.  Please define EDITOR or VISUAL")
+        sys.exit()
+
+    call([editor, filename])
+
+
+def open_file(filename):
+    """
+    This will open the user provided file and if there has not been any file
+    provided it will create and open a temporary file instead.
+    """
+    vprint("filename: %s\n" % filename)
+    if filename:
+        return open(filename, "w")
+    else:
+        return tempfile.NamedTemporaryFile(delete=False)
+
+
+def add_domain(user):
+    """
+    Helper function that appends @linaro.org to the username. It does nothing if
+    it is already included.
+    """
+    if '@' not in user:
+        user = user + "@linaro.org"
+    return user
+
+################################################################################
+# Argument parser
+################################################################################
 def get_parser():
     """ Takes care of script argument parsing. """
     parser = ArgumentParser(description='Script used to update comments in Jira')
@@ -70,21 +124,13 @@ def get_parser():
 
     return parser
 
-
+################################################################################
+# Jira functions
+################################################################################
 def get_my_name():
     """ Converts 'first.last@linaro.org' to 'First Last'. """
     n = os.environ['JIRA_USERNAME'].split("@")[0].title()
     return n.replace(".", " ")
-
-
-def add_domain(user):
-    """
-    Helper function that appends @linaro.org to the username. It does nothing if
-    it is already included.
-    """
-    if '@' not in user:
-        user = user + "@linaro.org"
-    return user
 
 
 def update_jira(jira, i, c):
@@ -171,33 +217,6 @@ def should_update():
             print("Incorrect input: %s" % answer)
 
 
-def open_editor(filename):
-    """
-    Function that tries to find the best suited editor to use and then
-    opens the status file in the editor.
-    """
-    if "EDITOR" in os.environ:
-        editor = os.environ['EDITOR']
-    elif "VISUAL" in os.environ:
-        editor = os.environ['VISUAL']
-    elif os.path.exists("/usr/bin/editor"):
-        editor = "/usr/bin/editor"
-    elif os.path.exists("/usr/bin/vim"):
-        editor = "/usr/bin/vim"
-    else:
-        eprint("Could not load an editor.  Please define EDITOR or VISUAL")
-        sys.exit()
-
-    call([editor, filename])
-
-
-def print_status(status):
-    """ Helper function printing your status """
-    print("This is your status:")
-    print("\n---\n")
-    print("\n".join(l.strip() for l in status))
-
-
 def parse_status_file(jira, filename):
     """
     The main parsing function, which will decide what should go into the actual
@@ -256,18 +275,6 @@ def parse_status_file(jira, filename):
     print_status(status)
 
 
-def open_file(filename):
-    """
-    This will open the user provided file and if there has not been any file
-    provided it will create and open a temporary file instead.
-    """
-    vprint("filename: %s\n" % filename)
-    if filename:
-        return open(filename, "w")
-    else:
-        return tempfile.NamedTemporaryFile(delete=False)
-
-
 def get_jira_instance(use_test_server):
     """
     Makes a connection to the Jira server and returns the Jira instance to the
@@ -289,7 +296,9 @@ def get_jira_instance(use_test_server):
 
     return JIRA(server, basic_auth=credentials)
 
-
+################################################################################
+# Main function
+################################################################################
 def main(argv):
     global verbose
 
