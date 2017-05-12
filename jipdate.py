@@ -189,8 +189,12 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
     my_issues = jira.search_issues(jql)
     msg = message_header + email_to_name(os.environ['JIRA_USERNAME']) + "\n\n"
 
-    f = open_file(filename)
-    filename = f.name
+    if filename is None:
+        f = sys.stdout
+        filename = "stdout"
+    else:
+        f = open_file(filename)
+        filename = f.name
 
     f.write(msg)
     vprint("Found issue:")
@@ -236,7 +240,7 @@ def parse_status_file(jira, filename):
     # [SWG-28]
     # [LITE-32]
     # etc ...
-    regex = r"^\[([A-Z]+-\d+)\]\n$"
+    regex = r"^\[(.*)\]\n$"
 
     # Contains the status text, it could be a file or a status email
     status = ""
@@ -254,10 +258,20 @@ def parse_status_file(jira, filename):
         match = re.search(regex, line)
         if match:
             myissue = match.group(1)
-            issue_comments.append((myissue, ""))
+            validissue = True
+
+            try:
+                issue = jira.issue(myissue)
+            except  Exception as e:
+                if 'Issue Does Not Exist' in e.text:
+                    print ('[{}] :  {}'.format(myissue, e.text))
+                    validissue = False
+
+            if validissue:
+                issue_comments.append((myissue, ""))
         else:
             # Don't add lines with comments
-            if (line[0] != "#" and issue_comments):
+            if (line[0] != "#" and issue_comments and validissue):
                 (i,c) = issue_comments[-1]
                 issue_comments[-1] = (i, c + line)
 
