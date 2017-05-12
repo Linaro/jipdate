@@ -133,6 +133,10 @@ def get_parser():
             default=False, \
             help='Load all Jira issues, not just the once marked in progress.')
 
+    parser.add_argument('-p', required=False, action="store_true", \
+            default=False, \
+            help='Print to stdout')
+
     return parser
 
 ################################################################################
@@ -373,9 +377,16 @@ def main(argv):
             eprint("Arguments '-x' and '-e' can only be used together with '-c'")
             sys.exit()
 
+    if args.p and not args.q:
+        eprint("Arguments '-p' can only be used together with '-q'")
+        sys.exit()
+
     if args.q:
         filename = get_jira_issues(jira, exclude_stories, epics_only, \
                                    args.all, args.file, args.user)
+
+        if args.p:
+            sys.exit()
     elif args.file is not None:
         filename = args.file
     else:
