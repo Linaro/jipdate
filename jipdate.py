@@ -12,10 +12,15 @@ import re
 import sys
 import sys
 import tempfile
+import yaml
 
 TEST_SERVER = 'https://dev-projects.linaro.org'
 PRODUCTION_SERVER = 'https://projects.linaro.org'
 server = PRODUCTION_SERVER
+
+# Yaml instance, opened at the beginning of main and then kept available
+# globally.
+yml_config = None
 
 ################################################################################
 # Helper functions
@@ -191,7 +196,7 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
         f.write("# Header: %s\n" % issue.fields.summary)
         f.write("# Type: %s\n" % issue.fields.issuetype)
         f.write("# Status: %s\n" % issue.fields.status)
-        f.write("No updates since last week.\n\n")
+        f.write(get_extra_comments())
 
     f.close()
     return filename
@@ -297,10 +302,31 @@ def get_jira_instance(use_test_server):
     return JIRA(server, basic_auth=credentials)
 
 ################################################################################
+# Yaml
+################################################################################
+def initiate_config(config_file):
+    """ Reads the config file (yaml format) and returns the sets the global
+    instance.
+    """
+    global yml_config
+    with open(config_file, 'r') as yml:
+        yml_config = yaml.load(yml)
+
+
+def get_extra_comments():
+    global yml_config
+    return ("\n".join(yml_config['comments']) + "\n\n")
+
+################################################################################
 # Main function
 ################################################################################
 def main(argv):
     global verbose
+    global yml_config
+
+    # This initiates the global yml configuration instance so it will be
+    # accessible everywhere after this call.
+    initiate_config("config.yml")
 
     parser = get_parser()
     args = parser.parse_args()

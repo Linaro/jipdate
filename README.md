@@ -36,20 +36,20 @@ $ cd $HOME/bin
 $ wget https://raw.githubusercontent.com/Linaro/jipdate/master/jipdate.py
 ```
 
-#### 2. Get the Jira package for Python
+#### 2. Get the Jira and YAML package for Python
 ```bash
-$ sudo pip install jira
+$ sudo pip install jira pyyaml
 ```
 
 **Note** On recent MAC OS X you may have to run
 ```bash
-$ sudo  pip install --user --upgrade jira
+$ sudo  pip install --user --upgrade jira pyyaml
 ```
 
 In case you have both Python 2 and Python 3 installed at the same machine you
 will eventually need to run with `pip2` instead.
 ```bash
-$ sudo pip2 install jira
+$ sudo pip2 install jira pyyaml
 ```
 
 **Note**, the script relies on running Python 2, and not Python 3.  If you are
