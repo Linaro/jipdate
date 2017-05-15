@@ -304,18 +304,45 @@ def get_jira_instance(use_test_server):
 ################################################################################
 # Yaml
 ################################################################################
+def create_default_config(config_file):
+    """ Creates a default YAML config file for use with jipdate. """
+    yml_cfg = """# Config file for jipdate
+# For use in future (backwards compatibility)
+version: 1
+
+# Extra comments added to each Jira issue (multiline is OK)
+comments:
+        - "No updates since last week."
+"""
+    with open(config_file, 'w') as f:
+        f.write(yml_cfg)
+
+
 def initiate_config(config_file):
     """ Reads the config file (yaml format) and returns the sets the global
     instance.
     """
     global yml_config
+
+    config_file = "config.yml"
+
+    if not os.path.isfile(config_file):
+        create_default_config(config_file)
+
     with open(config_file, 'r') as yml:
         yml_config = yaml.load(yml)
 
 
 def get_extra_comments():
+    """ Read the jipdate config file and return all option comments. """
     global yml_config
-    return ("\n".join(yml_config['comments']) + "\n\n")
+    try:
+        yml_iter = yml_config['comments']
+    except:
+        # Probably no "comments" section in the yml-file.
+        return "\n"
+
+    return ("\n".join(yml_iter) + "\n\n") if yml_iter is not None else "\n"
 
 ################################################################################
 # Main function
