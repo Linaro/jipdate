@@ -4,6 +4,7 @@
 
 ```
 usage: jipdate.py [-h] [-q] [-e] [-f FILE] [-t] [-u USER] [-v] [-x] [--all]
+                  [-p]
 
 Script used to update comments in Jira
 
@@ -22,6 +23,7 @@ optional arguments:
                         combination with "-q"
   --all                 Load all Jira issues, not just the once marked in
                         progress.
+  -p                    Print to stdout
 ```
 
 ## Installation
@@ -38,18 +40,21 @@ $ wget https://raw.githubusercontent.com/Linaro/jipdate/master/jipdate.py
 
 #### 2. Get the Jira and YAML package for Python
 ```bash
-$ sudo pip install jira pyyaml
+$ cd <jipdate>
+$ pip install --user -r requirements.txt
 ```
 
 **Note** On recent MAC OS X you may have to run
 ```bash
-$ sudo  pip install --user --upgrade jira pyyaml
+$ cd <jipdate>
+$ pip install --user --upgrade -r requirements.txt
 ```
 
 In case you have both Python 2 and Python 3 installed at the same machine you
 will eventually need to run with `pip2` instead.
 ```bash
-$ sudo pip2 install jira pyyaml
+$ cd <jipdate>
+$ pip2 install --user -r requirements.txt
 ```
 
 **Note**, the script relies on running Python 2, and not Python 3.  If you are
