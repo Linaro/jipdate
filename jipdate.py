@@ -189,12 +189,8 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
     my_issues = jira.search_issues(jql)
     msg = message_header + email_to_name(os.environ['JIRA_USERNAME']) + "\n\n"
 
-    if filename is None:
-        f = sys.stdout
-        filename = "stdout"
-    else:
-        f = open_file(filename)
-        filename = f.name
+    f = open_file(filename)
+    filename = f.name
 
     f.write(msg)
     vprint("Found issue:")
@@ -297,6 +293,9 @@ def parse_status_file(jira, filename):
     print("Successfully updated your Jira tickets!\n")
     print_status(status)
 
+def print_status_file(filename):
+    with open(filename, 'r') as f:
+        print(f.read())
 
 def get_jira_instance(use_test_server):
     """
@@ -400,6 +399,7 @@ def main(argv):
                                    args.all, args.file, args.user)
 
         if args.p:
+            print_status_file(filename)
             sys.exit()
     elif args.file is not None:
         filename = args.file
