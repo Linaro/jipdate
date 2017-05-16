@@ -153,14 +153,6 @@ def update_jira(jira, i, c):
     vprint("-- >8 --------------------------------------------------------------------------\n\n")
     jira.add_comment(i, c)
 
-
-message_header = """Hi,
-
-This is the status update from me for the last week.
-
-Cheers!
-"""
-
 def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
                     user):
     """
@@ -187,7 +179,10 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
     vprint(jql)
 
     my_issues = jira.search_issues(jql)
-    msg = message_header + email_to_name(os.environ['JIRA_USERNAME']) + "\n\n"
+
+    msg = get_header()
+    if msg != "":
+        msg += email_to_name(os.environ['JIRA_USERNAME']) + "\n\n"
 
     f = open_file(filename)
     filename = f.name
@@ -337,7 +332,16 @@ version: 1
 # Extra comments added to each Jira issue (multiline is OK)
 comments:
         - "No updates since last week."
-"""
+
+# Header of the file (multiline is OK). It will be followed by JIRA_USERNAME
+header:
+        - |
+          Hi,
+
+          This is the status update from me for the last week.
+
+          Cheers!"""
+
     with open(config_file, 'w') as f:
         f.write(yml_cfg)
 
@@ -365,6 +369,17 @@ def get_extra_comments():
     except:
         # Probably no "comments" section in the yml-file.
         return "\n"
+
+    return ("\n".join(yml_iter) + "\n\n") if yml_iter is not None else "\n"
+
+def get_header():
+    """ Read the jipdate config file and return all option header. """
+    global yml_config
+    try:
+        yml_iter = yml_config['header']
+    except:
+        # Probably no "comments" section in the yml-file.
+        return ""
 
     return ("\n".join(yml_iter) + "\n\n") if yml_iter is not None else "\n"
 
