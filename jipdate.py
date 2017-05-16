@@ -271,16 +271,23 @@ def parse_status_file(jira, filename):
                 (i,c) = issue_comments[-1]
                 issue_comments[-1] = (i, c + line)
 
+    issue_upload = []
     print("These JIRA cards will be updated as follows:\n")
     for (idx,t) in enumerate(issue_comments):
         (issue,comment) = issue_comments[idx]
 
         # Strip beginning  and trailing blank lines
         comment = comment.strip()
-        issue_comments[idx] = (issue, comment)
+
+        if comment == "":
+            vprint("Issue [%s] has no comment, not updating the issue" % (issue))
+            continue
+
+        issue_upload.append((issue, comment))
         print("[%s]\n  %s" % (issue, "\n  ".join(comment.splitlines())))
     print("")
 
+    issue_comments = issue_upload
     if should_update() == "n":
         print("No change, Jira was not updated!\n")
         print_status(status)
