@@ -331,7 +331,7 @@ version: 1
 
 # Extra comments added to each Jira issue (multiline is OK)
 comments:
-        - "No updates since last week."
+        - "# No updates since last week."
 
 # Header of the file (multiline is OK). It will be followed by JIRA_USERNAME
 header:
