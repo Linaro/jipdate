@@ -207,7 +207,7 @@ def should_update():
     while True:
         target = ""
         if server == PRODUCTION_SERVER:
-            target = "OFFICAL!"
+            target = "OFFICIAL!"
         elif server == TEST_SERVER:
             target = "TEST"
 
