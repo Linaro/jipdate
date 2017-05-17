@@ -4,7 +4,7 @@
 
 ```
 usage: jipdate.py [-h] [-q] [-e] [-f FILE] [-t] [-u USER] [-v] [-x] [--all]
-                  [-p]
+                  [-p] [-l]
 
 Script used to update comments in Jira
 
@@ -24,6 +24,7 @@ optional arguments:
   --all                 Load all Jira issues, not just the once marked in
                         progress.
   -p                    Print to stdout
+  -l                    Get the last comment from Jira
 ```
 
 ## Installation

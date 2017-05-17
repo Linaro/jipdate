@@ -137,6 +137,10 @@ def get_parser():
             default=False, \
             help='Print to stdout')
 
+    parser.add_argument('-l', required=False, action="store_true", \
+            default=False, \
+            help='Get the last comment from Jira')
+
     return parser
 
 ################################################################################
@@ -153,8 +157,23 @@ def update_jira(jira, i, c):
     vprint("-- >8 --------------------------------------------------------------------------\n\n")
     jira.add_comment(i, c)
 
+
+def write_last_jira_comment(f, jira, issue):
+    """ Pulls the last comment from Jira from an issue and writes it to the file
+    object.
+    """
+    c = jira.comments(issue)
+    if len(c) > 0:
+        try:
+            comment = "# Last comment:\n# ---8<---\n# %s\n# --->8---\n" % \
+                        "\n# ".join(c[-1].body.splitlines())
+            f.write(comment)
+        except UnicodeEncodeError:
+            vprint("Can't encode character")
+
+
 def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
-                    user):
+                    user, last_comment):
     """
     Query Jira and then creates a status update file (either temporary or named)
     containing all information found from the JQL query.
@@ -196,6 +215,9 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
         f.write("# Type: %s\n" % issue.fields.issuetype)
         f.write("# Status: %s\n" % issue.fields.status)
         f.write(get_extra_comments())
+        if last_comment:
+            write_last_jira_comment(f, jira, issue)
+        f.write("\n")
 
     f.close()
     return filename
@@ -370,7 +392,7 @@ def get_extra_comments():
         # Probably no "comments" section in the yml-file.
         return "\n"
 
-    return ("\n".join(yml_iter) + "\n\n") if yml_iter is not None else "\n"
+    return ("\n".join(yml_iter) + "\n") if yml_iter is not None else "\n"
 
 def get_header():
     """ Read the jipdate config file and return all option header. """
@@ -418,7 +440,7 @@ def main(argv):
 
     if args.q:
         filename = get_jira_issues(jira, exclude_stories, epics_only, \
-                                   args.all, args.file, args.user)
+                                   args.all, args.file, args.user, args.l)
 
         if args.p:
             print_status_file(filename)
