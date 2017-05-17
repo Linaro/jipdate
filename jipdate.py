@@ -97,10 +97,6 @@ def get_parser():
     """ Takes care of script argument parsing. """
     parser = ArgumentParser(description='Script used to update comments in Jira')
 
-    parser.add_argument('-q', required=False, action="store_true", \
-            default=False, \
-            help='Query Jira for issue(s) assigned to you')
-
     parser.add_argument('-e', required=False, action="store_true", \
             default=False, \
             help='Only include epics (no initiatives or stories). Used in combination \
@@ -110,6 +106,18 @@ def get_parser():
             default=None, \
             help='Load status update from FILE.  NOTE: -q will overwrite the \
             content of FILE')
+
+    parser.add_argument('-l', required=False, action="store_true", \
+            default=False, \
+            help='Get the last comment from Jira')
+
+    parser.add_argument('-p', required=False, action="store_true", \
+            default=False, \
+            help='Print to stdout')
+
+    parser.add_argument('-q', required=False, action="store_true", \
+            default=False, \
+            help='Query Jira for issue(s) assigned to you')
 
     parser.add_argument('-t', required=False, action="store_true", \
             default=False, \
@@ -132,14 +140,6 @@ def get_parser():
     parser.add_argument('--all', required=False, action="store_true", \
             default=False, \
             help='Load all Jira issues, not just the once marked in progress.')
-
-    parser.add_argument('-p', required=False, action="store_true", \
-            default=False, \
-            help='Print to stdout')
-
-    parser.add_argument('-l', required=False, action="store_true", \
-            default=False, \
-            help='Get the last comment from Jira')
 
     return parser
 

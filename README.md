@@ -3,18 +3,20 @@
 ## Parameters to the script
 
 ```
-usage: jipdate.py [-h] [-q] [-e] [-f FILE] [-t] [-u USER] [-v] [-x] [--all]
-                  [-p] [-l]
+usage: jipdate.py [-h] [-e] [-f FILE] [-l] [-p] [-q] [-t] [-u USER] [-v] [-x]
+                  [--all]
 
 Script used to update comments in Jira
 
 optional arguments:
   -h, --help            show this help message and exit
-  -q                    Query Jira for issue(s) assigned to you
   -e                    Only include epics (no initiatives or stories). Used
                         in combination with "-q"
   -f FILE, --file FILE  Load status update from FILE. NOTE: -q will overwrite
                         the content of FILE
+  -l                    Get the last comment from Jira
+  -p                    Print to stdout
+  -q                    Query Jira for issue(s) assigned to you
   -t                    Use the test server
   -u USER, --user USER  Query Jira with another Jira username (first.last or
                         first.last@linaro.org)
@@ -23,8 +25,6 @@ optional arguments:
                         combination with "-q"
   --all                 Load all Jira issues, not just the once marked in
                         progress.
-  -p                    Print to stdout
-  -l                    Get the last comment from Jira
 ```
 
 ## Installation
