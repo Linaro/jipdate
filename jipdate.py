@@ -173,7 +173,7 @@ def write_last_jira_comment(f, jira, issue):
 
 
 def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
-                    user, last_comment):
+                    user, last_comment, username):
     """
     Query Jira and then creates a status update file (either temporary or named)
     containing all information found from the JQL query.
@@ -201,7 +201,7 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
 
     msg = get_header()
     if msg != "":
-        msg += email_to_name(os.environ['JIRA_USERNAME']) + "\n\n"
+        msg += email_to_name(username) + "\n\n"
 
     f = open_file(filename)
     filename = f.name
@@ -321,18 +321,52 @@ def print_status_file(filename):
     with open(filename, 'r') as f:
         print(f.read())
 
+def get_username_from_config():
+    """ Get the username for Jira from the config file. """
+    username = None
+    # First check if the username is in the config file.
+    try:
+        username = yml_config['username']
+    except:
+        vprint("No username found in config")
+
+    return username
+
+def get_username_from_env():
+    """ Get the username for Jira from the environment variable. """
+    username = None
+    try:
+        username = os.environ['JIRA_USERNAME']
+    except KeyError:
+        vprint("No user name found in JIRA_USERNAME environment variable")
+
+    return username
+
+def get_username():
+    """ Main function to get the username from various places. """
+    username = get_username_from_env()
+    if username is not None:
+        return username
+
+    username = get_username_from_config()
+    if username is not None:
+        return username
+    else:
+        eprint("No JIRA_USERNAME exported and no username found in config.yml")
+        sys.exit()
+
 def get_jira_instance(use_test_server):
     """
     Makes a connection to the Jira server and returns the Jira instance to the
     caller.
     """
     global server
+    username = get_username()
 
     try:
-        username = os.environ['JIRA_USERNAME']
         password = os.environ['JIRA_PASSWORD']
     except KeyError:
-        eprint("Forgot to export JIRA_USERNAME and JIRA_PASSWORD?")
+        eprint("Forgot to export JIRA_PASSWORD?")
         sys.exit()
 
     credentials=(username, password)
@@ -340,7 +374,7 @@ def get_jira_instance(use_test_server):
     if use_test_server:
         server = TEST_SERVER
 
-    return JIRA(server, basic_auth=credentials)
+    return (JIRA(server, basic_auth=credentials), username)
 
 ################################################################################
 # Yaml
@@ -425,7 +459,7 @@ def main(argv):
         parser.print_help()
         sys.exit()
 
-    jira = get_jira_instance(args.t)
+    jira, username = get_jira_instance(args.t)
 
     exclude_stories = args.x
     epics_only = args.e
@@ -440,7 +474,8 @@ def main(argv):
 
     if args.q:
         filename = get_jira_issues(jira, exclude_stories, epics_only, \
-                                   args.all, args.file, args.user, args.l)
+                                   args.all, args.file, args.user, args.l, \
+                                   username)
 
         if args.p:
             print_status_file(filename)
