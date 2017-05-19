@@ -518,7 +518,7 @@ def main(argv):
 
     if g_args.x or g_args.e:
         if not g_args.q:
-            eprint("Arguments '-x' and '-e' can only be used together with '-c'")
+            eprint("Arguments '-x' and '-e' can only be used together with '-q'")
             sys.exit()
 
     if g_args.p and not g_args.q:
