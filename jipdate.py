@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from jira import JIRA
 from subprocess import call
 
+import getpass
 import json
 import os
 import re
@@ -381,6 +382,25 @@ def get_username():
         sys.exit()
 
 
+def get_password():
+    """
+    Get the password either from the environment variable or from the
+    terminal.
+    """
+    try:
+        password = os.environ['JIRA_PASSWORD']
+        return password
+    except KeyError:
+        vprint("Forgot to export JIRA_PASSWORD?")
+
+    password = getpass.getpass()
+    if len(password) == 0:
+        eprint("JIRA_PASSWORD not exported or empty password provided")
+        sys.exit()
+
+    return password
+
+
 def get_jira_instance(use_test_server):
     """
     Makes a connection to the Jira server and returns the Jira instance to the
@@ -388,12 +408,7 @@ def get_jira_instance(use_test_server):
     """
     global server
     username = get_username()
-
-    try:
-        password = os.environ['JIRA_PASSWORD']
-    except KeyError:
-        eprint("Forgot to export JIRA_PASSWORD?")
-        sys.exit()
+    password = get_password()
 
     credentials=(username, password)
 
