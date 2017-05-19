@@ -342,18 +342,44 @@ def get_username_from_env():
 
     return username
 
+def get_username_from_input():
+    """ Get the username for Jira from terminal. """
+    username = raw_input("Username (john.doe@foo.org): ").lower().strip()
+    if len(username) == 0:
+        eprint("Empty username not allowed")
+        sys.exit()
+    else:
+        return username
+
+
+def store_username_in_config(username):
+    """ Append the username to the config file. """
+    # Needs global variable or arg instead.
+    config_file = "config.yml"
+    with open(config_file, 'a') as f:
+        f.write("\nusername: %s" % username)
+
+
 def get_username():
     """ Main function to get the username from various places. """
-    username = get_username_from_env()
+    username = get_username_from_env() or \
+               get_username_from_config()
+
     if username is not None:
         return username
 
-    username = get_username_from_config()
+    username = get_username_from_input()
+
     if username is not None:
+        answer = raw_input("Username not found in config.yml, want to store " + \
+                           "it? (y/n) ").lower().strip()
+        if answer in set(['y']):
+            store_username_in_config(username)
         return username
     else:
         eprint("No JIRA_USERNAME exported and no username found in config.yml")
         sys.exit()
+
 
 def get_jira_instance(use_test_server):
     """
