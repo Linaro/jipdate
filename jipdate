@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# Wrapper script for jipdate.py
+# Takes care of setting JIRA_USERNAME and JIRA_PASSWORD:
+# - If $JIRA_USERNAME is not set, try to read the last used user name
+#   from ~/.jipdate, and prompt the user. The previous value can be
+#   accepted with <return>. The user name is saved to the preference file.
+# - IF $JIRA_PASSWORD is not set, prompt the user.
+
+HERE=$(dirname $(readlink -f $0))
+
+echo JIRA updater script
+
+if [ -z "$JIRA_USERNAME" ]; then
+  eval $(grep -s "JIRA_USERNAME=" ~/.jipdate)
+  echo -n "Username"
+  if [ "$JIRA_USERNAME" ]; then
+    echo -n " [$JIRA_USERNAME]"
+  fi
+  echo -n ": "
+  read u
+  if [ "$u" ]; then
+    JIRA_USERNAME=$u
+    echo "JIRA_USERNAME=$u" >~/.jipdate
+  fi
+  export JIRA_USERNAME
+fi
+
+
+if [ -z "$JIRA_PASSWORD" ]; then
+  echo -n "Password: "
+  read -s JIRA_PASSWORD
+  echo
+  export JIRA_PASSWORD
+fi
+
+$HERE/jipdate.py ${*:--q}
