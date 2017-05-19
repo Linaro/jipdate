@@ -17,11 +17,16 @@ import yaml
 
 TEST_SERVER = 'https://dev-projects.linaro.org'
 PRODUCTION_SERVER = 'https://projects.linaro.org'
-server = PRODUCTION_SERVER
+
+# Global variables
+g_config_file = None
+g_config_filename = "config.yml"
+g_server = PRODUCTION_SERVER
+g_args = None
 
 # Yaml instance, opened at the beginning of main and then kept available
 # globally.
-yml_config = None
+g_yml_config = None
 
 ################################################################################
 # Helper functions
@@ -33,7 +38,8 @@ def eprint(*args, **kwargs):
 
 def vprint(*args, **kwargs):
     """ Helper function that prints when verbose has been enabled. """
-    if verbose:
+    global g_args
+    if g_args.v:
         print(*args, file=sys.stdout, **kwargs)
 
 
@@ -173,12 +179,20 @@ def write_last_jira_comment(f, jira, issue):
             vprint("Can't encode character")
 
 
-def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
-                    user, last_comment, username):
+def get_jira_issues(jira, username):
     """
     Query Jira and then creates a status update file (either temporary or named)
     containing all information found from the JQL query.
     """
+    global g_args
+
+    exclude_stories = g_args.x
+    epics_only = g_args.e
+    all_status = g_args.all
+    filename = g_args.file
+    user = g_args.user
+    last_comment = g_args.l
+
     issue_types = ["Epic"]
     if not epics_only:
         issue_types.append("Initiative")
@@ -226,16 +240,16 @@ def get_jira_issues(jira, exclude_stories, epics_only, all_status, filename,
 
 def should_update():
     """ A yes or no dialogue. """
-    global server
+    global g_server
     while True:
         target = ""
-        if server == PRODUCTION_SERVER:
+        if g_server == PRODUCTION_SERVER:
             target = "OFFICIAL!"
-        elif server == TEST_SERVER:
+        elif g_server == TEST_SERVER:
             target = "TEST"
 
         print("Server to update: %s" % target)
-        print(" %s\n" % server);
+        print(" %s\n" % g_server);
         answer = raw_input("Sure you want to update Jira with the information " +
                            "above? [y/n] ").lower().strip()
         if answer in set(['y', 'n']):
@@ -327,7 +341,7 @@ def get_username_from_config():
     username = None
     # First check if the username is in the config file.
     try:
-        username = yml_config['username']
+        username = g_yml_config['username']
     except:
         vprint("No username found in config")
 
@@ -406,16 +420,16 @@ def get_jira_instance(use_test_server):
     Makes a connection to the Jira server and returns the Jira instance to the
     caller.
     """
-    global server
+    global g_server
     username = get_username()
     password = get_password()
 
     credentials=(username, password)
 
     if use_test_server:
-        server = TEST_SERVER
+        g_server = TEST_SERVER
 
-    return (JIRA(server, basic_auth=credentials), username)
+    return (JIRA(g_server, basic_auth=credentials), username)
 
 ################################################################################
 # Yaml
@@ -447,22 +461,20 @@ def initiate_config(config_file):
     """ Reads the config file (yaml format) and returns the sets the global
     instance.
     """
-    global yml_config
-
-    config_file = "config.yml"
+    global g_yml_config
 
     if not os.path.isfile(config_file):
         create_default_config(config_file)
 
     with open(config_file, 'r') as yml:
-        yml_config = yaml.load(yml)
+        g_yml_config = yaml.load(yml)
 
 
 def get_extra_comments():
     """ Read the jipdate config file and return all option comments. """
-    global yml_config
+    global g_yml_config
     try:
-        yml_iter = yml_config['comments']
+        yml_iter = g_yml_config['comments']
     except:
         # Probably no "comments" section in the yml-file.
         return "\n"
@@ -471,9 +483,9 @@ def get_extra_comments():
 
 def get_header():
     """ Read the jipdate config file and return all option header. """
-    global yml_config
+    global g_yml_config
     try:
-        yml_iter = yml_config['header']
+        yml_iter = g_yml_config['header']
     except:
         # Probably no "comments" section in the yml-file.
         return ""
@@ -484,45 +496,43 @@ def get_header():
 # Main function
 ################################################################################
 def main(argv):
-    global verbose
-    global yml_config
+    global g_args
+    global g_yml_config
+    global g_config_filename
 
     # This initiates the global yml configuration instance so it will be
     # accessible everywhere after this call.
-    initiate_config("config.yml")
+    initiate_config(g_config_filename)
 
     parser = get_parser()
-    args = parser.parse_args()
 
-    verbose=args.v
-    if not args.file and not args.q:
+    # The parser arguments are accessible everywhere after this call.
+    g_args = parser.parse_args()
+
+    if not g_args.file and not g_args.q:
         eprint("No file provided and not in query mode\n")
         parser.print_help()
         sys.exit()
 
-    jira, username = get_jira_instance(args.t)
+    jira, username = get_jira_instance(g_args.t)
 
-    exclude_stories = args.x
-    epics_only = args.e
-    if args.x or args.e:
-        if not args.q:
+    if g_args.x or g_args.e:
+        if not g_args.q:
             eprint("Arguments '-x' and '-e' can only be used together with '-c'")
             sys.exit()
 
-    if args.p and not args.q:
+    if g_args.p and not g_args.q:
         eprint("Arguments '-p' can only be used together with '-q'")
         sys.exit()
 
-    if args.q:
-        filename = get_jira_issues(jira, exclude_stories, epics_only, \
-                                   args.all, args.file, args.user, args.l, \
-                                   username)
+    if g_args.q:
+        filename = get_jira_issues(jira, username)
 
-        if args.p:
+        if g_args.p:
             print_status_file(filename)
             sys.exit()
-    elif args.file is not None:
-        filename = args.file
+    elif g_args.file is not None:
+        filename = g_args.file
     else:
         eprint("This should not happen")
 
