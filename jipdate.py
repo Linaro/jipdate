@@ -326,7 +326,7 @@ def parse_status_file(jira, filename):
     print("")
 
     issue_comments = issue_upload
-    if should_update() == "n":
+    if issue_comments == [] or should_update() == "n":
         print("No change, Jira was not updated!\n")
         print_status(status)
         sys.exit()
