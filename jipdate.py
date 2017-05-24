@@ -258,8 +258,8 @@ def should_update():
 
         print("Server to update: %s" % target)
         print(" %s\n" % g_server);
-        answer = raw_input("Sure you want to update Jira with the information " +
-                           "above? [y/n] ").lower().strip()
+        answer = raw_input("Are you sure you want to update Jira with the " +
+                           "information above? [y/n] ").lower().strip()
         if answer in set(['y', 'n']):
             return answer
         else:
