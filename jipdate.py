@@ -513,6 +513,7 @@ def get_header():
 
     return ("\n".join(yml_iter) + "\n\n") if yml_iter is not None else "\n"
 
+
 def merge_issue_header():
     """ Read the configuration flag which decides if the issue and issue header
     shall be combined. """
@@ -534,6 +535,21 @@ def get_header_separator():
         # Probably no "separator" section in the yml-file.
         return " | "
     return yml_iter
+
+
+def get_editor():
+    global g_yml_config
+
+    try:
+        yml_iter = g_yml_config['text-editor']
+    except:
+        # Probably no "text-editor" section in the yml-file.
+        return True
+
+    if yml_iter == "no" or yml_iter == "NO" or yml_iter == "No":
+        return False
+
+    return True
 
 ################################################################################
 # Main function
@@ -579,7 +595,8 @@ def main(argv):
     else:
         eprint("This should not happen")
 
-    open_editor(filename)
+    if get_editor():
+        open_editor(filename)
     parse_status_file(jira, filename)
 
 if __name__ == "__main__":
