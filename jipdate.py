@@ -48,7 +48,7 @@ def print_status(status):
     """ Helper function printing your status """
     print("This is your status:")
     print("\n---\n")
-    print("\n".join(l.strip() for l in status))
+    print("\n".join(l.strip('\n') for l in status))
 
 
 def open_editor(filename):
