@@ -181,6 +181,37 @@ def write_last_jira_comment(f, jira, issue):
         except UnicodeEncodeError:
             vprint("Can't encode character")
 
+def write_one_issue(jira_issues, f, issue):
+    global g_args
+    last_comment = g_args.l
+
+    if issue not in jira_issues:
+        # Add parent as a comment
+        f.write("#[%s] is parent of next issue\n" % issue)
+        f.write("#parent of next issues\n" % issue)
+        return
+
+    if "done" in jira_issues[issue]:
+        return
+
+    if "parent" in jira_issues[issue]:
+        write_one_issue(jira_issues, f, jira_issues[issue]["parent"])
+
+    if "done" in jira_issues[issue]:
+        return
+
+    # Write issue comments
+    f.write("%s" % jira_issues[issue]["comments"])
+    f.write(get_extra_comments())
+    if last_comment:
+        write_last_jira_comment(f, jira, issue)
+    f.write("\n")
+
+    jira_issues[issue]["done"] = "done"
+
+    for child_issue in jira_issues:
+        if "parent" in jira_issues[child_issue] and issue == jira_issues[child_issue]["parent"]:
+            write_one_issue(jira_issues, f, child_issue)
 
 def get_jira_issues(jira, username):
     """
@@ -194,7 +225,6 @@ def get_jira_issues(jira, username):
     all_status = g_args.all
     filename = g_args.file
     user = g_args.user
-    last_comment = g_args.l
 
     issue_types = ["Epic"]
     if not epics_only:
@@ -231,16 +261,28 @@ def get_jira_issues(jira, username):
 
     f.write(msg)
     vprint("Found issue:")
+
+    unsorted_issues={}
     for issue in my_issues:
+        issue_id = "%s" % issue
+        this_issue = {}
+
+        this_issue["comments"] = ""
         vprint("%s : %s" % (issue, issue.fields.summary))
-        f.write("[%s]\n" % issue)
-        f.write("# Header: %s\n" % issue.fields.summary)
-        f.write("# Type: %s\n" % issue.fields.issuetype)
-        f.write("# Status: %s\n" % issue.fields.status)
-        f.write(get_extra_comments())
-        if last_comment:
-            write_last_jira_comment(f, jira, issue)
-        f.write("\n")
+        this_issue["comments"] += "[%s]\n" % issue
+        this_issue["comments"] += "# Header: %s\n" % issue.fields.summary
+        this_issue["comments"] += "# Type: %s\n" % issue.fields.issuetype
+        this_issue["comments"] += "# Status: %s\n" % issue.fields.status
+
+        for link in issue.fields.issuelinks:
+            if "outwardIssue" in link.raw:
+                parent = link.outwardIssue.key
+                this_issue["parent"] = link.outwardIssue.key
+
+        unsorted_issues[issue_id] = this_issue
+
+    for issue in unsorted_issues:
+        write_one_issue(unsorted_issues, f, issue)
 
     f.close()
     return filename
