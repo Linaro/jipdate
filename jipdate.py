@@ -233,8 +233,13 @@ def get_jira_issues(jira, username):
     vprint("Found issue:")
     for issue in my_issues:
         vprint("%s : %s" % (issue, issue.fields.summary))
-        f.write("[%s]\n" % issue)
-        f.write("# Header: %s\n" % issue.fields.summary)
+
+        if (merge_issue_header()):
+            f.write("[%s%s%s]\n" % (issue, get_header_separator(), issue.fields.summary))
+        else:
+            f.write("[%s]\n" % issue)
+            f.write("# Header: %s\n" % issue.fields.summary)
+
         f.write("# Type: %s\n" % issue.fields.issuetype)
         f.write("# Status: %s\n" % issue.fields.status)
         f.write(get_extra_comments())
@@ -459,7 +464,15 @@ header:
 
           This is the status update from me for the last week.
 
-          Cheers!"""
+          Cheers!
+
+# Set this to 'True' if you want to get the issue header merged with the issue
+# number.
+use_combined_issue_header: False
+
+# Default separator in the issue header, change to the separator of your own
+# preference.
+separator: ' | '"""
 
     with open(config_file, 'w') as f:
         f.write(yml_cfg)
@@ -499,6 +512,28 @@ def get_header():
         return ""
 
     return ("\n".join(yml_iter) + "\n\n") if yml_iter is not None else "\n"
+
+def merge_issue_header():
+    """ Read the configuration flag which decides if the issue and issue header
+    shall be combined. """
+    global g_yml_config
+    try:
+        yml_iter = g_yml_config['use_combined_issue_header']
+    except:
+        # Probably no "use_combined_issue_header" section in the yml-file.
+        return False
+    return yml_iter
+
+
+def get_header_separator():
+    """ Read the separator from the jipdate config file. """
+    global g_yml_config
+    try:
+        yml_iter = g_yml_config['separator']
+    except:
+        # Probably no "separator" section in the yml-file.
+        return " | "
+    return yml_iter
 
 ################################################################################
 # Main function
