@@ -472,7 +472,8 @@ use_combined_issue_header: False
 
 # Default separator in the issue header, change to the separator of your own
 # preference.
-separator: ' | '"""
+separator: ' | '
+text-editor: True"""
 
     with open(config_file, 'w') as f:
         f.write(yml_cfg)
@@ -538,6 +539,8 @@ def get_header_separator():
 
 
 def get_editor():
+    """ Read the configuration flag that will decide whether to show the text
+    editor by default or not. """
     global g_yml_config
 
     try:
@@ -545,11 +548,7 @@ def get_editor():
     except:
         # Probably no "text-editor" section in the yml-file.
         return True
-
-    if yml_iter == "no" or yml_iter == "NO" or yml_iter == "No":
-        return False
-
-    return True
+    return yml_iter
 
 ################################################################################
 # Main function
