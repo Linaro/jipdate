@@ -281,7 +281,7 @@ def parse_status_file(jira, filename):
     # [SWG-28]
     # [LITE-32]
     # etc ...
-    regex = r"^\[([A-Z]*-[0-9]*).*\]\n$"
+    regex = r"^\[([A-Z]+-[0-9]+).*\]\n$"
 
     # Contains the status text, it could be a file or a status email
     status = ""
