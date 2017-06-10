@@ -105,18 +105,25 @@ Maintenance still ongoing.
 
 ```
 The parsing rules are rather simple.
-* A line containing **only** `[ISSUE-123]` marks the start for a new issue.
-  Everything after that will be considered as a comment belonging to that
-  particular issue until it finds another empty line containing just
-  `[ISSUE-124]` (since that marks the start for another new comment to another
-  issue).
+* Lines containing **only** `[...]` with no leading or trailing white space or
+  other characters are considered **tags**.
+* A tag beginning with a jira issue key such as `[ISSUE-123]` marks the start
+  for a new issue.  Everything after that will be considered as a comment
+  belonging to that particular issue until it finds another tag
+  containing for example `[ISSUE-124]` (since that marks the start for another
+  new comment to another issue), or until it meets a tag, which doesn't match
+  the format of a JIRA tag, such as `[STOP]` or `[OTHER]`, for example.
 * Lines starting with `#` are **editor comments** and will not be included in
   the actual update message (i.e., the same way as git deals with comments in
-  commit messages).
+  commit messages).  Comments can also be embedded inside a JIRA tag, for
+  example writing `[ISSUE-124 # My important JIRA issue title]`.
 * Everything **before** the first `[ISSUE-123]` in a status file will be ignored
   when updating Jira. Instead that will typically be used to write additional
   information complementing the status update when re-using the status file to
-  send email about your status.
+  send email about your status.  This information can alse come after the JIRA
+  issue updates, as long as a tag without a valid JIRA issue key tells the
+  script to stop processing text, for example by inserting a tag such as
+  `[STOP]` or `[OTHER]` (see above).
 * It is possible to refer to other issues in a comment as long as it is not
   standalone on a single line, i.e., in a comment section it is fine to write that
   "This depends on `[ISSUE-111]`".

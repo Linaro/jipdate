@@ -280,8 +280,15 @@ def parse_status_file(jira, filename):
     # Regexp to match Jira issue on a single line, i.e:
     # [SWG-28]
     # [LITE-32]
-    # etc ...
+    # ...
     regex = r"^\[([A-Z]+-[0-9]+).*\]\n$"
+
+    # Regexp to match a tag that indicates we should stop processing, ex:
+    # [STOP]
+    # [JIPDATE-STOP]
+    # [OTHER]
+    # ...
+    regex_stop = r"^\[.*\]\n$"
 
     # Contains the status text, it could be a file or a status email
     status = ""
@@ -310,6 +317,9 @@ def parse_status_file(jira, filename):
 
             if validissue:
                 issue_comments.append((myissue, ""))
+        # If we have non-JIRA issue tags, stop parsing until we find a valid tag
+        elif re.search(regex_stop, line):
+                validissue = False
         else:
             # Don't add lines with comments
             if (line[0] != "#" and issue_comments and validissue):
