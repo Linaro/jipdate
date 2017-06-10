@@ -322,7 +322,7 @@ def parse_status_file(jira, filename):
         (issue,comment) = issue_comments[idx]
 
         # Strip beginning  and trailing blank lines
-        comment = comment.strip()
+        comment = comment.strip('\n')
 
         if comment == "":
             vprint("Issue [%s] has no comment, not updating the issue" % (issue))
