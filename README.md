@@ -17,6 +17,8 @@ optional arguments:
   -l                    Get the last comment from Jira
   -p                    Print to stdout
   -q                    Query Jira for issue(s) assigned to you
+  -s                    Be silent, only show jira updates and not entire
+                        status file
   -t                    Use the test server
   -u USER, --user USER  Query Jira with another Jira username (first.last or
                         first.last@linaro.org)

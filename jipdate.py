@@ -129,6 +129,10 @@ def get_parser():
             default=False, \
             help='Query Jira for issue(s) assigned to you')
 
+    parser.add_argument('-s', required=False, action="store_true", \
+            default=False, \
+            help='Be silent, only show jira updates and not entire status file')
+
     parser.add_argument('-t', required=False, action="store_true", \
             default=False, \
             help='Use the test server')
@@ -277,6 +281,8 @@ def parse_status_file(jira, filename):
     Jira call. This for example removes the beginning until it finds a
     standalone [ISSUE] tag. It will also remove all comments prefixed with '#'.
     """
+    global g_args
+
     # Regexp to match Jira issue on a single line, i.e:
     # [SWG-28]
     # [LITE-32]
@@ -345,7 +351,8 @@ def parse_status_file(jira, filename):
     issue_comments = issue_upload
     if issue_comments == [] or should_update() == "n":
         print("No change, Jira was not updated!\n")
-        print_status(status)
+        if not g_args.s:
+            print_status(status)
         sys.exit()
 
     # if we found something, let's update jira
@@ -353,7 +360,8 @@ def parse_status_file(jira, filename):
         update_jira(jira, issue, comment)
 
     print("Successfully updated your Jira tickets!\n")
-    print_status(status)
+    if not g_args.s:
+        print_status(status)
 
 def print_status_file(filename):
     with open(filename, 'r') as f:
