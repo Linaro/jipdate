@@ -69,7 +69,7 @@ def open_editor(filename):
         editor = "/usr/bin/vi"
     else:
         eprint("Could not load an editor.  Please define EDITOR or VISUAL")
-        sys.exit()
+        sys.exit(os.EX_CONFIG)
 
     call([editor, filename])
 
@@ -394,7 +394,7 @@ def get_username_from_input():
     username = raw_input("Username (john.doe@foo.org): ").lower().strip()
     if len(username) == 0:
         eprint("Empty username not allowed")
-        sys.exit()
+        sys.exit(os.EX_NOUSER)
     else:
         return username
 
@@ -425,7 +425,7 @@ def get_username():
         return username
     else:
         eprint("No JIRA_USERNAME exported and no username found in config.yml")
-        sys.exit()
+        sys.exit(os.EX_NOUSER)
 
 
 def get_password():
@@ -442,7 +442,7 @@ def get_password():
     password = getpass.getpass()
     if len(password) == 0:
         eprint("JIRA_PASSWORD not exported or empty password provided")
-        sys.exit()
+        sys.exit(os.EX_NOPERM)
 
     return password
 
@@ -601,29 +601,30 @@ def main(argv):
     if not g_args.file and not g_args.q:
         eprint("No file provided and not in query mode\n")
         parser.print_help()
-        sys.exit()
+        sys.exit(os.EX_USAGE)
 
     jira, username = get_jira_instance(g_args.t)
 
     if g_args.x or g_args.e:
         if not g_args.q:
             eprint("Arguments '-x' and '-e' can only be used together with '-q'")
-            sys.exit()
+            sys.exit(os.EX_USAGE)
 
     if g_args.p and not g_args.q:
         eprint("Arguments '-p' can only be used together with '-q'")
-        sys.exit()
+        sys.exit(os.EX_USAGE)
 
     if g_args.q:
         filename = get_jira_issues(jira, username)
 
         if g_args.p:
             print_status_file(filename)
-            sys.exit()
+            sys.exit(os.EX_OK)
     elif g_args.file is not None:
         filename = g_args.file
     else:
-        eprint("This should not happen")
+        eprint("Trying to run script with unsupported configuration. Try using --help.")
+        sys.exit(os.EX_USAGE)
 
     if get_editor():
         open_editor(filename)
