@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from argparse import ArgumentParser
 from jira import JIRA
+from jira import JIRAError
 from subprocess import call
 from time import gmtime, strftime
 
@@ -442,7 +443,19 @@ def get_jira_instance(use_test_server):
     if use_test_server:
         g_server = TEST_SERVER
 
-    return (JIRA(g_server, basic_auth=credentials), username)
+    try:
+        j = JIRA(g_server, basic_auth=credentials), username
+    except JIRAError, e:
+	if e.text.find('CAPTCHA_CHALLENGE') != -1:
+            eprint('Captcha verification has been triggered by '\
+                   'JIRA - please go to JIRA using your web '\
+                   'browser, log out of JIRA, log back in '\
+                   'entering the captcha; after that is done, '\
+                   'please re-run the script')
+            sys.exit(os.EX_NOPERM)
+        else:
+            raise
+    return j
 
 ################################################################################
 # Yaml
