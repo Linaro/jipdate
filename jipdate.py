@@ -124,7 +124,7 @@ def get_parser():
 
     parser.add_argument('-p', required=False, action="store_true", \
             default=False, \
-            help='Print to stdout')
+            help='Print Jira query result to stdout (no editor or jira updates)')
 
     parser.add_argument('-q', required=False, action="store_true", \
             default=False, \

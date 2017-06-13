@@ -15,7 +15,7 @@ optional arguments:
   -f FILE, --file FILE  Load status update from FILE. NOTE: -q will overwrite
                         the content of FILE
   -l                    Get the last comment from Jira
-  -p                    Print to stdout
+  -p                    Print Jira query result to stdout (no editor or jira updates)
   -q                    Query Jira for issue(s) assigned to you
   -s                    Be silent, only show jira updates and not entire
                         status file
