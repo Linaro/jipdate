@@ -27,6 +27,7 @@ optional arguments:
                         combination with "-q"
   --all                 Load all Jira issues, not just the once marked in
                         progress.
+  --dry-run             Do not make any changes to JIRA
 ```
 
 ## Installation

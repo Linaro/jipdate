@@ -156,6 +156,10 @@ def get_parser():
             default=False, \
             help='Load all Jira issues, not just the once marked in progress.')
 
+    parser.add_argument('--dry-run', required=False, action="store_true", \
+            default=False, \
+            help='Do not make any changes to JIRA')
+
     return parser
 
 ################################################################################
@@ -166,11 +170,14 @@ def update_jira(jira, i, c):
     This is the function that do the actual updates to Jira and in this case it
     is adding comments to a certain issue.
     """
+    global g_args
+
     vprint("Updating Jira issue: %s with comment:" % i)
     vprint("-- 8< --------------------------------------------------------------------------")
     vprint("%s" % c)
     vprint("-- >8 --------------------------------------------------------------------------\n\n")
-    jira.add_comment(i, c)
+    if not g_args.dry_run:
+        jira.add_comment(i, c)
 
 
 def write_last_jira_comment(f, jira, issue):
@@ -350,8 +357,11 @@ def parse_status_file(jira, filename):
     print("")
 
     issue_comments = issue_upload
-    if issue_comments == [] or should_update() == "n":
-        print("No change, Jira was not updated!\n")
+    if issue_comments == [] or g_args.dry_run or should_update() == "n":
+        if issue_comments == []:
+            print("No change, Jira was not updated!\n")
+        else:
+            print("Comments will not be written to Jira!\n")
         if not g_args.s:
             print_status(status)
         sys.exit()
