@@ -304,6 +304,10 @@ def parse_status_file(jira, filename):
     # ...
     regex_stop = r"^\[.*\]\n$"
 
+    # Regexp to mach a tag that indicates to stop processing completely:
+    # [FIN]
+    regex_fin = r"^\[FIN\]\n$"
+
     # Contains the status text, it could be a file or a status email
     status = ""
 
@@ -331,6 +335,10 @@ def parse_status_file(jira, filename):
 
             if validissue:
                 issue_comments.append((myissue, ""))
+	# Stop parsing entirely.  This needs to be placed before regex_stop
+	# or the .* will match and [FIN] won't be processed
+	elif re.search(regex_fin, line):
+		break
         # If we have non-JIRA issue tags, stop parsing until we find a valid tag
         elif re.search(regex_stop, line):
                 validissue = False
