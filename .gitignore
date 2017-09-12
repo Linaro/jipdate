@@ -3,3 +3,4 @@ config.yml
 status.txt
 *.swp
 *.pyc
+*.mm
