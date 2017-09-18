@@ -1,50 +1,23 @@
 #!/usr/bin/env python
-
-from __future__ import print_function
-
 from argparse import ArgumentParser
-from jira import JIRA
-from jira import JIRAError
 from subprocess import call
 from time import gmtime, strftime
 
-import getpass
 import json
 import os
 import re
 import sys
-import sys
 import tempfile
 import yaml
 
-TEST_SERVER = 'https://dev-projects.linaro.org'
-PRODUCTION_SERVER = 'https://projects.linaro.org'
-
-# Global variables
-g_config_file = None
-g_config_filename = "config.yml"
-g_server = PRODUCTION_SERVER
-g_args = None
-
-# Yaml instance, opened at the beginning of main and then kept available
-# globally.
-g_yml_config = None
+# Local files
+import cfg
+from helper import vprint, eprint
+import jiralogin
 
 ################################################################################
 # Helper functions
 ################################################################################
-def eprint(*args, **kwargs):
-    """ Helper function that prints on stderr. """
-    print(*args, file=sys.stderr, **kwargs)
-
-
-def vprint(*args, **kwargs):
-    """ Helper function that prints when verbose has been enabled. """
-    global g_args
-    if g_args.v:
-        print(*args, file=sys.stdout, **kwargs)
-
-
 def print_status(status):
     """ Helper function printing your status """
     print("This is your status:")
@@ -170,13 +143,11 @@ def update_jira(jira, i, c):
     This is the function that do the actual updates to Jira and in this case it
     is adding comments to a certain issue.
     """
-    global g_args
-
     vprint("Updating Jira issue: %s with comment:" % i)
     vprint("-- 8< --------------------------------------------------------------------------")
     vprint("%s" % c)
     vprint("-- >8 --------------------------------------------------------------------------\n\n")
-    if not g_args.dry_run:
+    if not cfg.args.dry_run:
         jira.add_comment(i, c)
 
 
@@ -199,14 +170,12 @@ def get_jira_issues(jira, username):
     Query Jira and then creates a status update file (either temporary or named)
     containing all information found from the JQL query.
     """
-    global g_args
-
-    exclude_stories = g_args.x
-    epics_only = g_args.e
-    all_status = g_args.all
-    filename = g_args.file
-    user = g_args.user
-    last_comment = g_args.l
+    exclude_stories = cfg.args.x
+    epics_only = cfg.args.e
+    all_status = cfg.args.all
+    filename = cfg.args.file
+    user = cfg.args.user
+    last_comment = cfg.args.l
 
     issue_types = ["Epic"]
     if not epics_only:
@@ -265,16 +234,15 @@ def get_jira_issues(jira, username):
 
 def should_update():
     """ A yes or no dialogue. """
-    global g_server
     while True:
         target = ""
-        if g_server == PRODUCTION_SERVER:
+        if cfg.server == PRODUCTION_SERVER:
             target = "OFFICIAL!"
-        elif g_server == TEST_SERVER:
+        elif cfg.server == TEST_SERVER:
             target = "TEST"
 
         print("Server to update: %s" % target)
-        print(" %s\n" % g_server);
+        print(" %s\n" % cfg.server);
         answer = raw_input("Are you sure you want to update Jira with the " +
                            "information above? [y/n] ").lower().strip()
         if answer in set(['y', 'n']):
@@ -289,8 +257,6 @@ def parse_status_file(jira, filename):
     Jira call. This for example removes the beginning until it finds a
     standalone [ISSUE] tag. It will also remove all comments prefixed with '#'.
     """
-    global g_args
-
     # Regexp to match Jira issue on a single line, i.e:
     # [SWG-28]
     # [LITE-32]
@@ -365,12 +331,12 @@ def parse_status_file(jira, filename):
     print("")
 
     issue_comments = issue_upload
-    if issue_comments == [] or g_args.dry_run or should_update() == "n":
+    if issue_comments == [] or cfg.args.dry_run or should_update() == "n":
         if issue_comments == []:
             print("No change, Jira was not updated!\n")
         else:
             print("Comments will not be written to Jira!\n")
-        if not g_args.s:
+        if not cfg.args.s:
             print_status(status)
         sys.exit()
 
@@ -379,119 +345,12 @@ def parse_status_file(jira, filename):
         update_jira(jira, issue, comment)
 
     print("Successfully updated your Jira tickets!\n")
-    if not g_args.s:
+    if not cfg.args.s:
         print_status(status)
 
 def print_status_file(filename):
     with open(filename, 'r') as f:
         print(f.read())
-
-def get_username_from_config():
-    """ Get the username for Jira from the config file. """
-    username = None
-    # First check if the username is in the config file.
-    try:
-        username = g_yml_config['username']
-    except:
-        vprint("No username found in config")
-
-    return username
-
-def get_username_from_env():
-    """ Get the username for Jira from the environment variable. """
-    username = None
-    try:
-        username = os.environ['JIRA_USERNAME']
-    except KeyError:
-        vprint("No user name found in JIRA_USERNAME environment variable")
-
-    return username
-
-def get_username_from_input():
-    """ Get the username for Jira from terminal. """
-    username = raw_input("Username (john.doe@foo.org): ").lower().strip()
-    if len(username) == 0:
-        eprint("Empty username not allowed")
-        sys.exit(os.EX_NOUSER)
-    else:
-        return username
-
-
-def store_username_in_config(username):
-    """ Append the username to the config file. """
-    # Needs global variable or arg instead.
-    config_file = "config.yml"
-    with open(config_file, 'a') as f:
-        f.write("\nusername: %s" % username)
-
-
-def get_username():
-    """ Main function to get the username from various places. """
-    username = get_username_from_env() or \
-               get_username_from_config()
-
-    if username is not None:
-        return username
-
-    username = get_username_from_input()
-
-    if username is not None:
-        answer = raw_input("Username not found in config.yml, want to store " + \
-                           "it? (y/n) ").lower().strip()
-        if answer in set(['y']):
-            store_username_in_config(username)
-        return username
-    else:
-        eprint("No JIRA_USERNAME exported and no username found in config.yml")
-        sys.exit(os.EX_NOUSER)
-
-
-def get_password():
-    """
-    Get the password either from the environment variable or from the
-    terminal.
-    """
-    try:
-        password = os.environ['JIRA_PASSWORD']
-        return password
-    except KeyError:
-        vprint("Forgot to export JIRA_PASSWORD?")
-
-    password = getpass.getpass()
-    if len(password) == 0:
-        eprint("JIRA_PASSWORD not exported or empty password provided")
-        sys.exit(os.EX_NOPERM)
-
-    return password
-
-
-def get_jira_instance(use_test_server):
-    """
-    Makes a connection to the Jira server and returns the Jira instance to the
-    caller.
-    """
-    global g_server
-    username = get_username()
-    password = get_password()
-
-    credentials=(username, password)
-
-    if use_test_server:
-        g_server = TEST_SERVER
-
-    try:
-        j = JIRA(g_server, basic_auth=credentials), username
-    except JIRAError, e:
-	if e.text.find('CAPTCHA_CHALLENGE') != -1:
-            eprint('Captcha verification has been triggered by '\
-                   'JIRA - please go to JIRA using your web '\
-                   'browser, log out of JIRA, log back in '\
-                   'entering the captcha; after that is done, '\
-                   'please re-run the script')
-            sys.exit(os.EX_NOPERM)
-        else:
-            raise
-    return j
 
 ################################################################################
 # Yaml
@@ -532,20 +391,17 @@ def initiate_config(config_file):
     """ Reads the config file (yaml format) and returns the sets the global
     instance.
     """
-    global g_yml_config
-
     if not os.path.isfile(config_file):
         create_default_config(config_file)
 
     with open(config_file, 'r') as yml:
-        g_yml_config = yaml.load(yml)
+        cfg.yml_config = yaml.load(yml)
 
 
 def get_extra_comments():
     """ Read the jipdate config file and return all option comments. """
-    global g_yml_config
     try:
-        yml_iter = g_yml_config['comments']
+        yml_iter = cfg.yml_config['comments']
     except:
         # Probably no "comments" section in the yml-file.
         return "\n"
@@ -554,9 +410,8 @@ def get_extra_comments():
 
 def get_header():
     """ Read the jipdate config file and return all option header. """
-    global g_yml_config
     try:
-        yml_iter = g_yml_config['header']
+        yml_iter = cfg.yml_config['header']
     except:
         # Probably no "comments" section in the yml-file.
         return ""
@@ -567,9 +422,8 @@ def get_header():
 def merge_issue_header():
     """ Read the configuration flag which decides if the issue and issue header
     shall be combined. """
-    global g_yml_config
     try:
-        yml_iter = g_yml_config['use_combined_issue_header']
+        yml_iter = cfg.yml_config['use_combined_issue_header']
     except:
         # Probably no "use_combined_issue_header" section in the yml-file.
         return False
@@ -578,9 +432,8 @@ def merge_issue_header():
 
 def get_header_separator():
     """ Read the separator from the jipdate config file. """
-    global g_yml_config
     try:
-        yml_iter = g_yml_config['separator']
+        yml_iter = cfg.yml_config['separator']
     except:
         # Probably no "separator" section in the yml-file.
         return " | "
@@ -590,10 +443,8 @@ def get_header_separator():
 def get_editor():
     """ Read the configuration flag that will decide whether to show the text
     editor by default or not. """
-    global g_yml_config
-
     try:
-        yml_iter = g_yml_config['text-editor']
+        yml_iter = cfg.yml_config['text-editor']
     except:
         # Probably no "text-editor" section in the yml-file.
         return True
@@ -603,43 +454,39 @@ def get_editor():
 # Main function
 ################################################################################
 def main(argv):
-    global g_args
-    global g_yml_config
-    global g_config_filename
-
     # This initiates the global yml configuration instance so it will be
     # accessible everywhere after this call.
-    initiate_config(g_config_filename)
+    initiate_config(cfg.config_filename)
 
     parser = get_parser()
 
     # The parser arguments are accessible everywhere after this call.
-    g_args = parser.parse_args()
+    cfg.args = parser.parse_args()
 
-    if not g_args.file and not g_args.q:
+    if cfg.args.file and not cfg.args.q:
         eprint("No file provided and not in query mode\n")
         parser.print_help()
         sys.exit(os.EX_USAGE)
 
-    jira, username = get_jira_instance(g_args.t)
+    jira, username = jiralogin.get_jira_instance(cfg.args.t)
 
-    if g_args.x or g_args.e:
-        if not g_args.q:
+    if cfg.args.x or cfg.args.e:
+        if not cfg.args.q:
             eprint("Arguments '-x' and '-e' can only be used together with '-q'")
             sys.exit(os.EX_USAGE)
 
-    if g_args.p and not g_args.q:
+    if cfg.args.p and not cfg.args.q:
         eprint("Arguments '-p' can only be used together with '-q'")
         sys.exit(os.EX_USAGE)
 
-    if g_args.q:
+    if cfg.args.q:
         filename = get_jira_issues(jira, username)
 
-        if g_args.p:
+        if cfg.args.p:
             print_status_file(filename)
             sys.exit(os.EX_OK)
-    elif g_args.file is not None:
-        filename = g_args.file
+    elif cfg.args.file is not None:
+        filename = cfg.args.file
     else:
         eprint("Trying to run script with unsupported configuration. Try using --help.")
         sys.exit(os.EX_USAGE)
