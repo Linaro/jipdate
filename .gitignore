@@ -1,4 +1,5 @@
 config.yml
+.jipdate.yml
 status.txt
 *.swp
 *.pyc
