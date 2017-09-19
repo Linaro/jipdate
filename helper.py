@@ -1,5 +1,5 @@
 from __future__ import print_function
-
+import sys
 import cfg
 
 def eprint(*args, **kwargs):
@@ -11,5 +11,3 @@ def vprint(*args, **kwargs):
     """ Helper function that prints when verbose has been enabled. """
     if cfg.args.v:
         print(*args, file=sys.stdout, **kwargs)
-
-

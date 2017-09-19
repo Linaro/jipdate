@@ -44,10 +44,8 @@ def get_username_from_input():
 def store_username_in_config(username):
     """ Append the username to the config file. """
     # Needs global variable or arg instead.
-    config_file = "config.yml"
-    with open(config_file, 'a') as f:
+    with open(cfg.config_file, 'a') as f:
         f.write("\nusername: %s" % username)
-
 
 
 def get_username():
@@ -61,8 +59,9 @@ def get_username():
     username = get_username_from_input()
 
     if username is not None:
-        answer = raw_input("Username not found in config.yml, want to store " + \
-                           "it? (y/n) ").lower().strip()
+        question = "Username not found in %s, want to store it? (y/n) " % \
+                        cfg.config_file
+        answer = raw_input(question).lower().strip()
         if answer in set(['y']):
             store_username_in_config(username)
         return username
