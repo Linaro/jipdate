@@ -236,9 +236,9 @@ def should_update():
     """ A yes or no dialogue. """
     while True:
         target = ""
-        if cfg.server == PRODUCTION_SERVER:
+        if cfg.server == cfg.PRODUCTION_SERVER:
             target = "OFFICIAL!"
-        elif cfg.server == TEST_SERVER:
+        elif cfg.server == cfg.TEST_SERVER:
             target = "TEST"
 
         print("Server to update: %s" % target)
@@ -355,61 +355,6 @@ def print_status_file(filename):
 ################################################################################
 # Yaml
 ################################################################################
-def create_default_config():
-    """ Creates a default YAML config file for use with jipdate (default
-    location is $HOME/.config/jipdate """
-    yml_cfg = """# Config file for jipdate
-# For use in future (backwards compatibility)
-version: 1
-
-# Extra comments added to each Jira issue (multiline is OK)
-comments:
-        - "# No updates since last week."
-
-# Header of the file (multiline is OK). It will be followed by JIRA_USERNAME
-header:
-        - |
-          Hi,
-
-          This is the status update from me for the last week.
-
-          Cheers!
-
-# Set this to 'True' if you want to get the issue header merged with the issue
-# number.
-use_combined_issue_header: False
-
-# Default separator in the issue header, change to the separator of your own
-# preference.
-separator: ' | '
-text-editor: True"""
-    if not os.path.exists(cfg.config_path):
-        os.makedirs(cfg.config_path)
-    with open(cfg.config_path + "/" + cfg.config_filename, 'w') as f:
-        f.write(yml_cfg)
-
-def get_config_file():
-    """ Returns the location for the config file (including the path). """
-    for d in cfg.config_locations:
-        for f in [cfg.config_filename, cfg.config_legacy_filename]:
-            checked_file = d + "/" + f
-            if os.path.isfile(checked_file):
-                return d + "/" + f
-
-    # If nothing was found, then return the default file
-    return cfg.config_path + "/" + cfg.config_filename
-
-def initiate_config():
-    """ Reads the config file (yaml format) and returns the sets the global
-    instance.
-    """
-    cfg.config_file = get_config_file()
-    if not os.path.isfile(cfg.config_file):
-        create_default_config()
-
-    vprint("Using config file: %s" % cfg.config_file)
-    with open(cfg.config_file, 'r') as yml:
-        cfg.yml_config = yaml.load(yml)
 
 
 def get_extra_comments():
@@ -475,7 +420,7 @@ def main(argv):
 
     # This initiates the global yml configuration instance so it will be
     # accessible everywhere after this call.
-    initiate_config()
+    cfg.initiate_config()
 
     if cfg.args.file and not cfg.args.q:
         eprint("No file provided and not in query mode\n")
