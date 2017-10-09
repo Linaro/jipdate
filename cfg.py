@@ -1,5 +1,9 @@
 import os
 import sys
+import yaml
+
+# Local files
+from helper import vprint, eprint
 
 TEST_SERVER = 'https://dev-projects.linaro.org'
 PRODUCTION_SERVER = 'https://projects.linaro.org'
@@ -24,3 +28,76 @@ config_legacy_filename = "config.yml"
 config_file = None
 
 yml_config = None
+
+
+################################################################################
+# Global config file used by different scripts
+################################################################################
+def create_default_config():
+    """ Creates a default YAML config file for use with jipdate (default
+    location is $HOME/.config/jipdate """
+    yml_cfg = """# Config file for jipdate
+# For use in future (backwards compatibility)
+version: 1
+
+# Extra comments added to each Jira issue (multiline is OK)
+comments:
+        - "# No updates since last week."
+
+# Header of the file (multiline is OK). It will be followed by JIRA_USERNAME
+header:
+        - |
+          Hi,
+
+          This is the status update from me for the last week.
+
+          Cheers!
+
+# Set this to 'True' if you want to get the issue header merged with the issue
+# number.
+use_combined_issue_header: False
+
+# Default separator in the issue header, change to the separator of your own
+# preference.
+separator: ' | '
+text-editor: True"""
+    global config_path
+    global config_filename
+
+    if not os.path.exists(config_path):
+        os.makedirs(config_path)
+    with open(config_path + "/" + config_filename, 'w') as f:
+        f.write(yml_cfg)
+
+
+def get_config_file():
+    """ Returns the location for the config file (including the path). """
+    global config_locations
+    global config_legacy_filename
+    global config_path
+    global config_filename
+
+    for d in config_locations:
+        for f in [config_filename, config_legacy_filename]:
+            checked_file = d + "/" + f
+            if os.path.isfile(checked_file):
+                return d + "/" + f
+
+    # If nothing was found, then return the default file
+    return config_path + "/" + config_filename
+
+
+def initiate_config():
+    """ Reads the config file (yaml format) and returns the sets the global
+    instance.
+    """
+    global yml_config
+    global config_file
+
+    config_file = get_config_file()
+    if not os.path.isfile(config_file):
+        create_default_config()
+
+    vprint("Using config file: %s" % config_file)
+    with open(config_file, 'r') as yml:
+        yml_config = yaml.load(yml)
