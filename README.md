@@ -123,7 +123,7 @@ The parsing rules are rather simple.
 * Everything **before** the first `[ISSUE-123]` in a status file will be ignored
   when updating Jira. Instead that will typically be used to write additional
   information complementing the status update when re-using the status file to
-  send email about your status.  This information can alse come after the JIRA
+  send email about your status.  This information can also come after the JIRA
   issue updates, as long as a tag without a valid JIRA issue key tells the
   script to stop processing text, for example by inserting a tag such as
   `[STOP]` or `[OTHER]` (see above).
@@ -131,12 +131,47 @@ The parsing rules are rather simple.
   standalone on a single line, i.e., in a comment section it is fine to write that
   "This depends on `[ISSUE-111]`".
 
+## Config file
+Jipdate uses a config file to store various settings. If the jipdate script does
+not find any config file it will create it for you (with default settings). The
+default location is:
+```bash
+$HOME/.config/jipdate/jipdate.yml
+```
+
+But the script will also pick up the config from
+```bash
+$HOME/jipdate.yml
+<root-of-where-is-installed-jipdate>/jipdate.yml
+```
+
+The default name of the script is `jipdate.yml`, but it also supports the legacy
+name `config.yml`.
+
+The config-file is pretty self explanatory with comments describing the
+settings. So instead of describe them here, just open the config file and
+read/tweak according to your needs.
+
 ## Run the script
 With command line parameters, there several ways to run the script. But the three
 most common cases are listed here below (section 2-4). Pick the one that suites
 your needs best, but first, start with exporting your credentials to the Jira
 server.
-#### 1. Export your credentials in your shell
+#### 1. Provide your credentials
+There are a couple of different ways to provide your credentials, so pick the
+one that you prefer. Beware that there is a `-u`, `--user` argument in the
+script. That argument shall **not** be used for providing your username. The
+intention with that argument is to be able to query other Jira users than
+yourself.
+
+##### 1.1 Script asks for it
+If you provide no credentials at all when running the script, you will be asked
+to enter both the username and the password. After entering the username, it
+will also ask whether you would like to save the username. If you answer '`y`'
+to that question, the script will save it to the config file (`jipdate.yml`) and
+in the future we script will pick up the username from the config instead.
+
+##### 1.2 Using the shell
 ```bash
 $ export JIRA_USERNAME="john.doe@linaro.org"
 $ export JIRA_PASSWORD="my-super-secret-password"
@@ -145,6 +180,15 @@ We know that this isn't best practice when it comes to security. In bash you can
 play with `HISTCONTROL` to make bash not save the information in the history
 file. In many configurations it is sufficient to add a leading space before the
 export command to make bash not save a command to history.
+
+##### 1.3 Using the configuration file
+You can save your username in the configuration file (`jipdate.yml`) by adding a
+line saying:
+```yml
+username: john.doe@linaro.org
+```
+Alternatively, just follow `1.1 Script asks for it` above.
+
 
 #### 2. Create/update a status file
 If you have no previous status file, then the easiest way to is to make the
