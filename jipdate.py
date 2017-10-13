@@ -422,7 +422,7 @@ def main(argv):
     # accessible everywhere after this call.
     cfg.initiate_config()
 
-    if cfg.args.file and not cfg.args.q:
+    if not cfg.args.file and not cfg.args.q:
         eprint("No file provided and not in query mode\n")
         parser.print_help()
         sys.exit(os.EX_USAGE)
