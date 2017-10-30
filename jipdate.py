@@ -199,7 +199,7 @@ def get_jira_issues(jira, username):
     my_issues = jira.search_issues(jql)
 
     showdate = strftime("%Y-%m-%d", gmtime())
-    subject = "# Subject: [Weekly] Week ending " + showdate + "\n\n"
+    subject = "Subject: [Weekly] Week ending " + showdate + "\n\n"
 
     msg = get_header()
     if msg != "":
