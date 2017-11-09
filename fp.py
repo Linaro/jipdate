@@ -443,7 +443,11 @@ def build_initiatives_node(jira, issue, d_handled):
     initiative.add_assignee(assignee)
 
     initiative.set_state(str(issue.fields.status.name))
-    sponsors = issue.fields.customfield_10101
+
+    sponsors = None
+    if hasattr(issue.fields, "customfield_10101"):
+        sponsors = issue.fields.customfield_10101
+
     if sponsors is not None:
         for s in sponsors:
             initiative.add_sponsor(str(s.value))
