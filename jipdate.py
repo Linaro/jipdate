@@ -282,7 +282,7 @@ def parse_status_file(jira, filename):
     myissue = "";
     mycomment = "";
 
-    # build list of {issue-key,comment} tuples found in status
+    # build list of {issue,comment} tuples found in status
     issue_comments = []
     for line in status:
         # New issue?
@@ -293,13 +293,12 @@ def parse_status_file(jira, filename):
 
             try:
                 issue = jira.issue(myissue)
+                issue_comments.append((issue, ""))
             except  Exception as e:
                 if 'Issue Does Not Exist' in e.text:
                     print ('[{}] :  {}'.format(myissue, e.text))
                     validissue = False
 
-            if validissue:
-                issue_comments.append((myissue, ""))
         # Stop parsing entirely.  This needs to be placed before regex_stop
         # or the .* will match and [FIN] won't be processed
         elif re.search(regex_fin, line):
