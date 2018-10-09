@@ -56,7 +56,7 @@ def open_file(filename):
     if filename:
         return open(filename, "w")
     else:
-        return tempfile.NamedTemporaryFile(delete=False)
+        return tempfile.NamedTemporaryFile(mode='w+t', delete=False)
 
 
 def add_domain(user):
