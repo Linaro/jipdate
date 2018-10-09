@@ -44,7 +44,7 @@ def open_editor(filename):
         eprint("Could not load an editor.  Please define EDITOR or VISUAL")
         sys.exit(os.EX_CONFIG)
 
-    call([editor, filename])
+    call(editor.split() + [filename])
 
 
 def open_file(filename):
