@@ -138,16 +138,21 @@ def get_parser():
 ################################################################################
 # Jira functions
 ################################################################################
-def update_jira(jira, i, c):
+def update_jira(jira, i, c, t):
     """
     This is the function that do the actual updates to Jira and in this case it
     is adding comments to a certain issue.
     """
-    vprint("Updating Jira issue: %s with comment:" % i)
-    vprint("-- 8< --------------------------------------------------------------------------")
-    vprint("%s" % c)
-    vprint("-- >8 --------------------------------------------------------------------------\n\n")
-    jira.add_comment(i, c)
+    if t:
+        vprint("Updating Jira issue: %s with transition: %s" % (i, t))
+        jira.transition_issue(i, t)
+
+    if c != "":
+        vprint("Updating Jira issue: %s with comment:" % i)
+        vprint("-- 8< --------------------------------------------------------------------------")
+        vprint("%s" % c)
+        vprint("-- >8 --------------------------------------------------------------------------\n\n")
+        jira.add_comment(i, c)
 
 
 def write_last_jira_comment(f, jira, issue):
@@ -273,6 +278,9 @@ def parse_status_file(jira, filename):
     # [FIN]
     regex_fin = r"^\[FIN\]\n$"
 
+    # Regexp to match for a status update:
+    regex_status = r"^Status: (.+)\n$"
+
     # Contains the status text, it could be a file or a status email
     status = ""
 
@@ -293,7 +301,7 @@ def parse_status_file(jira, filename):
 
             try:
                 issue = jira.issue(myissue)
-                issue_comments.append((issue, ""))
+                issue_comments.append((issue, "", ""))
             except  Exception as e:
                 if 'Issue Does Not Exist' in e.text:
                     print('[{}] :  {}'.format(myissue, e.text))
@@ -306,26 +314,42 @@ def parse_status_file(jira, filename):
         # If we have non-JIRA issue tags, stop parsing until we find a valid tag
         elif re.search(regex_stop, line):
                 validissue = False
+        elif re.search(regex_status, line):
+            transition = line[8:].strip()
+            (i,c,_) = issue_comments[-1]
+            issue_comments[-1] = (i, c, transition)
         else:
             # Don't add lines with comments
             if (line[0] != "#" and issue_comments and validissue):
-                (i,c) = issue_comments[-1]
-                issue_comments[-1] = (i, c + line)
+                (i,c,t) = issue_comments[-1]
+                issue_comments[-1] = (i, c + line, t)
 
     issue_upload = []
     print("These JIRA cards will be updated as follows:\n")
     for (idx,t) in enumerate(issue_comments):
-        (issue,comment) = issue_comments[idx]
+        (issue,comment,transition) = issue_comments[idx]
 
         # Strip beginning  and trailing blank lines
         comment = comment.strip('\n')
 
-        if comment == "":
-            vprint("Issue [%s] has no comment, not updating the issue" % (issue))
+        if transition != "" and transition != str(issue.fields.status):
+            transition_map = dict([(t['name'], t['id']) for t in jira.transitions(issue)])
+            if not transition in transition_map:
+                print("Invalid transition \"{}\" for issue {}".format(transition, issue))
+                sys.exit(1)
+
+            transition_id = transition_map[transition]
+            transition_summary = " %s => %s" % (issue.fields.status, transition)
+        else:
+            transition_id = None
+            transition_summary = ""
+
+        if comment == "" and not transition_id:
+            vprint("Issue [%s] has no comment or transitions, not updating the issue" % (issue))
             continue
 
-        issue_upload.append((issue, comment))
-        print("[%s]\n  %s" % (issue, "\n  ".join(comment.splitlines())))
+        issue_upload.append((issue, comment, transition_id))
+        print("[%s]%s\n  %s" % (issue, transition_summary, "\n  ".join(comment.splitlines())))
     print("")
 
     issue_comments = issue_upload
@@ -339,8 +363,8 @@ def parse_status_file(jira, filename):
         sys.exit()
 
     # if we found something, let's update jira
-    for (issue,comment) in issue_comments:
-        update_jira(jira, issue, comment)
+    for (issue,comment,transition) in issue_comments:
+        update_jira(jira, issue, comment, transition)
 
     print("Successfully updated your Jira tickets!\n")
     if not cfg.args.s:
