@@ -147,8 +147,7 @@ def update_jira(jira, i, c):
     vprint("-- 8< --------------------------------------------------------------------------")
     vprint("%s" % c)
     vprint("-- >8 --------------------------------------------------------------------------\n\n")
-    if not cfg.args.dry_run:
-        jira.add_comment(i, c)
+    jira.add_comment(i, c)
 
 
 def write_last_jira_comment(f, jira, issue):
