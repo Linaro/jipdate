@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from argparse import ArgumentParser
 from subprocess import call
 from time import gmtime, strftime
@@ -243,7 +243,7 @@ def should_update():
 
         print("Server to update: %s" % target)
         print(" %s\n" % cfg.server);
-        answer = raw_input("Are you sure you want to update Jira with the " +
+        answer = input("Are you sure you want to update Jira with the " +
                            "information above? [y/n] ").lower().strip()
         if answer in set(['y', 'n']):
             return answer
@@ -296,7 +296,7 @@ def parse_status_file(jira, filename):
                 issue = jira.issue(myissue)
             except  Exception as e:
                 if 'Issue Does Not Exist' in e.text:
-                    print ('[{}] :  {}'.format(myissue, e.text))
+                    print('[{}] :  {}'.format(myissue, e.text))
                     validissue = False
 
             if validissue:

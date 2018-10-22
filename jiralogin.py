@@ -33,7 +33,7 @@ def get_username_from_env():
 
 def get_username_from_input():
     """ Get the username for Jira from terminal. """
-    username = raw_input("Username (john.doe@foo.org): ").lower().strip()
+    username = input("Username (john.doe@foo.org): ").lower().strip()
     if len(username) == 0:
         eprint("Empty username not allowed")
         sys.exit(os.EX_NOUSER)
@@ -61,7 +61,7 @@ def get_username():
     if username is not None:
         question = "Username not found in %s, want to store it? (y/n) " % \
                         cfg.config_file
-        answer = raw_input(question).lower().strip()
+        answer = input(question).lower().strip()
         if answer in set(['y']):
             store_username_in_config(username)
         return username
