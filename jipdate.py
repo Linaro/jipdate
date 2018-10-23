@@ -349,6 +349,7 @@ def parse_status_file(jira, filename):
             transition_map = dict([(t['name'], t['id']) for t in jira.transitions(issue)])
             if not transition in transition_map:
                 print("Invalid transition \"{}\" for issue {}".format(transition, issue))
+                print("Possible transitions: {}".format([t for t in transition_map]))
                 sys.exit(1)
 
             transition_id = transition_map[transition]
