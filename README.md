@@ -36,34 +36,29 @@ optional arguments:
 $ git clone https://github.com/Linaro/jipdate.git
 ```
 
-alternatively download it directly to a folder in your `$PATH`, for example:
-```bash
-$ cd $HOME/bin
-$ wget https://raw.githubusercontent.com/Linaro/jipdate/master/jipdate.py
-```
-
 #### 2. Get the Jira and YAML package for Python
+Note that Jipdate has been updated (2018-10-23) to run Python 3 instead of
+Python 2. In case you need the last known working Python 2 version, then please
+give the [python2 branch](https://github.com/Linaro/jipdate/tree/python2) a
+try.
+
+If Python 3 is the default Python version on your machine, then run:
 ```bash
 $ cd <jipdate>
 $ pip install --user -r requirements.txt
 ```
 
-**Note** On recent MAC OS X you may have to run
+If Python **2** is the default Python version on your machine, then run:
+```bash
+$ cd <jipdate>
+$ pip3 install --user -r requirements.txt
+```
+
+**Note** On recent MAC OS X you may have to run (note the '--upgrade')
 ```bash
 $ cd <jipdate>
 $ pip install --user --upgrade -r requirements.txt
 ```
-
-In case you have both Python 2 and Python 3 installed at the same machine you
-will eventually need to run with `pip2` instead.
-```bash
-$ cd <jipdate>
-$ pip2 install --user -r requirements.txt
-```
-
-**Note**, the script relies on running Python 2, and not Python 3.  If you are
-using Arch Linux you may have to manually tweak the script to execute
-`/usr/bin/env python2` instead.
 
 ## Jira server
 The script by default uses the **official** Linaro Jira server. If you intend to
@@ -132,7 +127,7 @@ The parsing rules are rather simple.
   "This depends on `[ISSUE-111]`".
 
 ## Config file
-Jipdate uses a config file to store various settings. If the jipdate script does
+Jipdate uses a config file to store various settings. If the Jipdate script does
 not find any config file it will create it for you (with default settings). The
 default location is:
 ```bash
@@ -232,4 +227,7 @@ $ ./jipdate.py -q --all
 ```
 
 ## Known bugs
-* Works on Python2 only (probably an easy fix, raw_input / input must be fixed).
+* Sometimes people see captcha verifications for some reason, see
+[Issue#24](https://github.com/Linaro/jipdate/issues/24)
+([Issue#15](https://github.com/Linaro/jipdate/issues/15) kind of touches that
+ too).
