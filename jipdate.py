@@ -278,8 +278,9 @@ def parse_status_file(jira, filename):
     # [FIN]
     regex_fin = r"^\[FIN\]\n$"
 
-    # Regexp to match for a status update:
-    regex_status = r"^Status: (.+)\n$"
+    # Regexp to match for a status update, this will remove 'Status' from the
+    # match:
+    regex_status = r'(?:^Status:) *(.+)\n$'
 
     # Contains the status text, it could be a file or a status email
     status = ""
@@ -295,6 +296,12 @@ def parse_status_file(jira, filename):
     for line in status:
         # New issue?
         match = re.search(regex, line)
+
+        # Evaluate and save the transition regex for later. We have to do this
+        # here, since we cannot assign and save the variable in the if
+        # construction as you can do in C for example.
+        transition = re.search(regex_status, line)
+
         if match:
             myissue = match.group(1)
             validissue = True
@@ -307,6 +314,7 @@ def parse_status_file(jira, filename):
                     print('[{}] :  {}'.format(myissue, e.text))
                     validissue = False
 
+
         # Stop parsing entirely.  This needs to be placed before regex_stop
         # or the .* will match and [FIN] won't be processed
         elif re.search(regex_fin, line):
@@ -314,10 +322,15 @@ def parse_status_file(jira, filename):
         # If we have non-JIRA issue tags, stop parsing until we find a valid tag
         elif re.search(regex_stop, line):
                 validissue = False
-        elif re.search(regex_status, line):
-            transition = line[8:].strip()
+        elif transition:
+            # If we have a match, then the new status should be first in the
+            # group. Jira always expect the name of the state transitions to be
+            # word capitalized, hence the call to the title() function. This
+            # means that it doesn't matter if the user enter all lower case,
+            # mixed or all upper case. All of them will work.
+            new_status = transition.groups()[0].title()
             (i,c,_) = issue_comments[-1]
-            issue_comments[-1] = (i, c, transition)
+            issue_comments[-1] = (i, c, new_status)
         else:
             # Don't add lines with comments
             if (line[0] != "#" and issue_comments and validissue):
