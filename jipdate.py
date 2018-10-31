@@ -122,7 +122,7 @@ def get_parser():
 
     parser.add_argument('-x', required=False, action="store_true", \
             default=False, \
-            help='EXCLUDE stories from gathered Jira issues. Used in combination \
+            help='EXCLUDE stories and sub-tasks from gathered Jira issues. Used in combination \
             with "-q"')
 
     parser.add_argument('--all', required=False, action="store_true", \
@@ -181,11 +181,11 @@ def get_jira_issues(jira, username):
     user = cfg.args.user
     last_comment = cfg.args.l
 
-    issue_types = ["Epic"]
+    issue_types = ["Sub-task", "Epic"]
     if not epics_only:
         issue_types.append("Initiative")
         if not exclude_stories:
-            issue_types.append("Story")
+            issue_types.extend(["Story", "Sub-task"])
     issue_type = "issuetype in (%s)" % ", ".join(issue_types)
 
     status = "status in (\"In Progress\")"
