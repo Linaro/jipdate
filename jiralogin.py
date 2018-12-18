@@ -104,7 +104,7 @@ def get_jira_instance(use_test_server):
 
     try:
         j = JIRA(cfg.server, basic_auth=credentials), username
-    except (JIRAError, e):
+    except JIRAError as e:
         if e.text.find('CAPTCHA_CHALLENGE') != -1:
             eprint('Captcha verification has been triggered by '\
                    'JIRA - please go to JIRA using your web '\
