@@ -4,3 +4,4 @@ status.txt
 *.swp
 *.pyc
 *.mm
+docs/_build/*
