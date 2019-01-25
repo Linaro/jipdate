@@ -3,27 +3,45 @@
 #########################
 Installation instructions
 #########################
-.. todo::
+First step is to get the required packages, then you need to clone Jipdate
+itself and then finally install all the needed Python packages.
 
-    Video: 
+.. raw:: html
 
-First step is to get the required packages, here we are using ``apt-get`` for
-package management (Debian, Ubuntu etc). Then you need to clone Jipdate itself
-and then finally install all the needed Python packages.
+    <iframe width="560" height="315"
+    src="https://www.youtube.com/embed/q8CMftA4c4M" frameborder="0"
+    allow="accelerometer; autoplay; encrypted-media; gyroscope;
+    picture-in-picture" allowfullscreen></iframe>
 
 .. note::
 
     Jipdate is **Python3** only! So at line 2 (*python3-pip*) and 5 (*pip3*) you
     have to adjust accordingly. I.e., if Python3 is default on your distro, then
-    it might be that the package is simply ``python-pip``. The important message
-    is that you **only** use Jipdate with Python3!
+    it might be that the package is simply ``python-pip`` (like on Arch Linux
+    for example). The important message is that you **only** use Jipdate with
+    Python3!
 
+Ubuntu / Debian based systems
+=============================
 .. code-block:: bash
     :linenos:
     :emphasize-lines: 2, 5
 
-    $ sudo apt update && sudo apt upgrade
+    $ sudo apt update 
+    $ sudo apt upgrade
     $ sudo apt install python3-pip git
+    $ git clone https://github.com/Linaro/jipdate.git
+    $ cd jipdate
+    $ pip3 install --user -r requirements.txt 
+
+Arch Linux
+==========
+.. code-block:: bash
+    :linenos:
+    :emphasize-lines: 2, 5
+
+    $ sudo pacman -Syu
+    $ sudo pacman -S extra/git extra/python extra/python-pip
     $ git clone https://github.com/Linaro/jipdate.git
     $ cd jipdate
     $ pip3 install --user -r requirements.txt 

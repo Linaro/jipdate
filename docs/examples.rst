@@ -75,6 +75,52 @@ Here it's the ``-l`` that makes the difference and Jipdate will pull the last
 comment from the ticket(s) and include that in each section for each and every
 Jira ticket assigned to you.
 
+I want to change state of my card
+---------------------------------
+.. todo::
+
+    Video:
+
+Run Jipdate with any parameter that suits your needs. Here we're getting
+everything.
+
+.. code-block:: bash
+
+    $ ./jipdate.py -q --all
+
+In your Editor you will see a section for each Jira ticket (based on your given
+parameters to Jipdate). It could look like this:
+
+.. code-block:: bash
+
+    ...
+    [SWG-368]
+    # Header: Demo / Test issue three
+    # Type: Epic
+    # Status: Open
+    # No updates since last week.
+    ...
+
+Here you can see it in the ``Open`` state (``# Status Open``). If you want to
+change this to another state, then simply uncomment the line and write another
+state for it, i.e., change like we've done at line 4 here.
+
+.. code-block:: bash
+    :linenos:
+    :emphasize-lines: 4
+
+    [SWG-368]
+    # Header: Demo / Test issue three
+    # Type: Epic
+    Status: To do
+    # No updates since last week.
+
+.. note::
+
+    Upper/lower case doesn't matter for the status change, nor does spaces
+    before or after matter. But it needs to be written as in Jira otherwise. If
+    you get it wrong, Jipdate will return an error and also show the possible
+    combinations. Example. ``todo`` is wrong, but ``to do`` is correct!
 
 Updates with status reports
 ===========================
