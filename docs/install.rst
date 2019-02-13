@@ -6,6 +6,12 @@ Installation instructions
 First step is to get the required packages, then you need to clone Jipdate
 itself and then finally install all the needed Python packages.
 
+The video clip below will show how to install it and how to do a simple update
+with state changes and adding comments to a Jira ticket. Note that you are
+**not** required to run it in a Docker container. The only reason for doing that
+was to try the installation from a clean system to ensure that things are
+working as supposed to when starting out from scratch.
+
 .. raw:: html
 
     <iframe width="560" height="315"
