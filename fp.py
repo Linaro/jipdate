@@ -335,11 +335,11 @@ def build_story_node(jira, story_key, d_handled=None, epic_node=None):
         return None
 
     # To prevent UnicodeEncodeError ignore unicode
-    summary = str(si.fields.summary.encode('ascii', 'ignore'))
+    summary = str(si.fields.summary.encode('ascii', 'ignore').decode())
     story = Node(str(si.key), summary, str(si.fields.issuetype))
 
     try:
-        assignee = str(si.fields.assignee.displayName.encode('ascii', 'ignore'))
+        assignee = str(si.fields.assignee.displayName.encode('ascii', 'ignore').decode())
     except AttributeError:
         assignee = str(si.fields.assignee)
     story.add_assignee(assignee)
@@ -377,11 +377,11 @@ def build_epics_node(jira, epic_key, d_handled=None, initiative_node=None):
         d_handled[str(ei.key)] = [None, ei]
         return None
 
-    summary = str(ei.fields.summary.encode('ascii', 'ignore'))
+    summary = str(ei.fields.summary.encode('ascii', 'ignore').decode())
     epic = Node(str(ei.key), summary, str(ei.fields.issuetype))
 
     try:
-        assignee = str(ei.fields.assignee.displayName.encode('ascii', 'ignore'))
+        assignee = str(ei.fields.assignee.displayName.encode('ascii', 'ignore').decode())
     except AttributeError:
         assignee = str(ei.fields.assignee)
     epic.add_assignee(assignee)
@@ -433,11 +433,11 @@ def build_initiatives_node(jira, issue, d_handled):
         d_handled[str(issue.key)] = [None, issue]
         return None
 
-    summary = str(issue.fields.summary.encode('ascii', 'ignore'))
+    summary = str(issue.fields.summary.encode('ascii', 'ignore').decode())
     initiative = Node(str(issue.key), summary, str(issue.fields.issuetype))
 
     try:
-        assignee = str(issue.fields.assignee.displayName.encode('ascii', 'ignore'))
+        assignee = str(issue.fields.assignee.displayName.encode('ascii', 'ignore').decode())
     except AttributeError:
         assignee = str(issue.fields.assignee)
     initiative.add_assignee(assignee)
