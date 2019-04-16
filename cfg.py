@@ -100,4 +100,4 @@ def initiate_config():
 
     vprint("Using config file: %s" % config_file)
     with open(config_file, 'r') as yml:
-        yml_config = yaml.load(yml)
+        yml_config = yaml.load(yml, Loader=yaml.FullLoader)
