@@ -19,10 +19,23 @@ import jiralogin
 import pprint
 pprint = pprint.PrettyPrinter().pprint
 
+def add_domain(user):
+    """
+    Helper function that appends @linaro.org to the username. It does nothing if
+    it is already included.
+    """
+    if '@' not in user:
+        user = user + "@linaro.org"
+    return user
+
 def enumerate_updates(jira):
+    user = cfg.args.user
+
     since = datetime.datetime.now() - datetime.timedelta(days=7)
 
     jql = "project = QLT AND updatedDate > -7d"
+    if user:
+       jql += ' AND assignee = "%s"' % add_domain(user)
     vprint(jql)
 
     my_issues = jira.search_issues(jql, expand="changelog", fields="summary,comment,assignee,created")
@@ -59,9 +72,13 @@ def enumerate_updates(jira):
         yield(status)
 
 def enumerate_pending(jira):
+    user = cfg.args.user
+
     since = datetime.datetime.now() - datetime.timedelta(days=7)
 
     jql = 'project = QLT AND status = "In Progress"'
+    if user:
+       jql += ' AND assignee = "%s"' % add_domain(user)
     vprint(jql)
 
     my_issues = jira.search_issues(jql, expand="changelog", fields="summary,assignee,created")
