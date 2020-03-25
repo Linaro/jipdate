@@ -39,6 +39,10 @@ def enumerate_updates(jira):
     vprint(jql)
 
     my_issues = jira.search_issues(jql, expand="changelog", fields="summary,comment,assignee,created")
+    if my_issues.total > my_issues.maxResults:
+        my_issues = jira.search_issues(jql, expand="changelog", fields="summary,comment,assignee,created",
+                                       maxResults=my_issues.total)
+
     for issue in my_issues:
         changelog = issue.changelog
         comments = issue.fields.comment.comments
@@ -82,6 +86,10 @@ def enumerate_pending(jira):
     vprint(jql)
 
     my_issues = jira.search_issues(jql, expand="changelog", fields="summary,assignee,created")
+    if my_issues.total > my_issues.maxResults:
+        my_issues = jira.search_issues(jql, expand="changelog", fields="summary,assignee,created",
+                                       maxResults=my_issues.total)
+
     for issue in my_issues:
         status = {}
         status['issue'] = str(issue)
