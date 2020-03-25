@@ -161,8 +161,11 @@ def main(argv):
                     event = ''
 
                 print("   * %s (%s) %s" % (issue['summary'], issue['issue'], event))
-                if len(issue['comments']) > 0:
-                    print("     * %s" % "\n       ".join(issue['comments'][-1].splitlines()))
+                for c in issue['comments']:
+                    cc = c.splitlines()
+                    print("     * " + cc[0])
+                    for cc_line in cc[1:]:
+                        print("       " + cc_line)
 
         issues = [p for p in pendings if p['assignee'] == assignee]
         if len(issues) > 0:
