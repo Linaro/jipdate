@@ -240,7 +240,7 @@ def get_jira_issues(jira, username):
         f.write("\n")
 
     f.close()
-    return filename
+    return (filename, my_issues)
 
 
 def should_update():
@@ -262,7 +262,7 @@ def should_update():
             print("Incorrect input: %s" % answer)
 
 
-def parse_status_file(jira, filename):
+def parse_status_file(jira, filename, issues):
     """
     The main parsing function, which will decide what should go into the actual
     Jira call. This for example removes the beginning until it finds a
@@ -317,12 +317,11 @@ def parse_status_file(jira, filename):
             validissue = True
 
             try:
-                issue = jira.issue(myissue)
+                issue = [x for x in issues if str(x) == myissue][0]
                 issue_comments.append((issue, "", ""))
-            except  Exception as e:
-                if 'Issue Does Not Exist' in e.text:
-                    print('[{}] :  {}'.format(myissue, e.text))
-                    validissue = False
+            except IndexError as e:
+                print('[{}] :  {}'.format(myissue, "Issue not found"))
+                validissue = False
 
 
         # Stop parsing entirely.  This needs to be placed before regex_stop
@@ -500,7 +499,7 @@ def main(argv):
         sys.exit(os.EX_USAGE)
 
     if cfg.args.q:
-        filename = get_jira_issues(jira, username)
+        (filename, issues) = get_jira_issues(jira, username)
 
         if cfg.args.p:
             print_status_file(filename)
@@ -513,7 +512,7 @@ def main(argv):
 
     if get_editor():
         open_editor(filename)
-    parse_status_file(jira, filename)
+    parse_status_file(jira, filename, issues)
 
 if __name__ == "__main__":
     main(sys.argv)
