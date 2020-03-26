@@ -370,7 +370,7 @@ def parse_status_file(jira, filename):
                     sys.exit(1)
                 resolution_id = resolution_map[resolution]
 
-            transition_map = dict([(t['name'], t['id']) for t in jira.transitions(issue)])
+            transition_map = dict([(t['name'].title(), t['id']) for t in jira.transitions(issue)])
             if not transition in transition_map:
                 print("Invalid transition \"{}\" for issue {}".format(transition, issue))
                 print("Possible transitions: {}".format([t for t in transition_map]))
