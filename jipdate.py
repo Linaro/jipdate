@@ -143,9 +143,14 @@ def update_jira(jira, i, c, t):
     This is the function that do the actual updates to Jira and in this case it
     is adding comments to a certain issue.
     """
-    if t:
-        vprint("Updating Jira issue: %s with transition: %s" % (i, t))
-        jira.transition_issue(i, t)
+    if t['transition']:
+        if t['resolution']:
+            vprint("Updating Jira issue: %s with transition: %s (%s)" %
+                   (i, t['transition'], t['resolution']))
+            jira.transition_issue(i, t['transition'], fields={'resolution':{'id': t['resolution']}})
+        else:
+            vprint("Updating Jira issue: %s with transition: %s" % (i, t['transition']))
+            jira.transition_issue(i, t['transition'])
 
     if c != "":
         vprint("Updating Jira issue: %s with comment:" % i)
@@ -287,6 +292,9 @@ def parse_status_file(jira, filename):
     # Contains the status text, it could be a file or a status email
     status = ""
 
+    # List of resolutions (when doing a transition to Resolved). Query once globally.
+    resolution_map = dict([(t.name.title(), t.id) for t in jira.resolutions()])
+
     with open(filename) as f:
         status = f.readlines()
 
@@ -347,7 +355,21 @@ def parse_status_file(jira, filename):
         # Strip beginning  and trailing blank lines
         comment = comment.strip('\n')
 
+        # initialize here to avoid unassigned variables and useless code complexity
+        resolution_id = transition_id = None
+        resolution = transition_summary = ""
+
         if transition != "" and transition != str(issue.fields.status):
+            # An optional 'resolution' attribute can be set when doing a transition
+            # to Resolved, using the following pattern: Resolved / <resolution>
+            if transition.startswith('Resolved') and '/' in transition:
+                (transition, resolution) = map(str.strip, transition.split('/'))
+                if not resolution in resolution_map:
+                    print("Invalid resolution \"{}\" for issue {}".format(resolution, issue))
+                    print("Possible resolution: {}".format([t for t in resolution_map]))
+                    sys.exit(1)
+                resolution_id = resolution_map[resolution]
+
             transition_map = dict([(t['name'], t['id']) for t in jira.transitions(issue)])
             if not transition in transition_map:
                 print("Invalid transition \"{}\" for issue {}".format(transition, issue))
@@ -355,16 +377,17 @@ def parse_status_file(jira, filename):
                 sys.exit(1)
 
             transition_id = transition_map[transition]
-            transition_summary = " %s => %s" % (issue.fields.status, transition)
-        else:
-            transition_id = None
-            transition_summary = ""
+            if resolution:
+                transition_summary = " %s => %s (%s)" % (issue.fields.status, transition, resolution)
+            else:
+                transition_summary = " %s => %s" % (issue.fields.status, transition)
 
         if comment == "" and not transition_id:
             vprint("Issue [%s] has no comment or transitions, not updating the issue" % (issue))
             continue
 
-        issue_upload.append((issue, comment, transition_id))
+        issue_upload.append((issue, comment,
+                             {'transition': transition_id, 'resolution': resolution_id}))
         print("[%s]%s\n  %s" % (issue, transition_summary, "\n  ".join(comment.splitlines())))
     print("")
 
