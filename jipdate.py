@@ -323,7 +323,7 @@ def parse_status_file(jira, filename, issues):
         # If we have non-JIRA issue tags, stop parsing until we find a valid tag
         elif re.search(regex_stop, line):
                 validissue = False
-        elif transition:
+        elif transition and validissue:
             # If we have a match, then the new status should be first in the
             # group. Jira always expect the name of the state transitions to be
             # word capitalized, hence the call to the title() function. This
