@@ -76,7 +76,8 @@ def enumerate_updates(jira):
                 if item.field == 'resolution':
                     status['resolution'] = item.toString
 
-        yield(status)
+        if len(status['comments']) != 0 or status['resolution']:
+            yield(status)
 
 def enumerate_pending(jira):
     user = cfg.args.user
