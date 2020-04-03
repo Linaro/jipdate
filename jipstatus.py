@@ -33,7 +33,7 @@ def enumerate_updates(jira):
 
     since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-    jql = "project = QLT AND updatedDate > -7d"
+    jql = "(project = QLT OR assignee in membersOf('linaro-landing-team-qualcomm')) AND updatedDate > -7d"
     if user:
        jql += ' AND assignee = "%s"' % add_domain(user)
     vprint(jql)
@@ -80,7 +80,7 @@ def enumerate_pending(jira):
 
     since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-    jql = 'project = QLT AND status = "In Progress"'
+    jql = "(project = QLT OR assignee in membersOf('linaro-landing-team-qualcomm')) AND status = 'In Progress'"
     if user:
        jql += ' AND assignee = "%s"' % add_domain(user)
     vprint(jql)
