@@ -69,6 +69,9 @@ def enumerate_updates(jira):
             status['comments'].append(comment.body)
 
         for history in changelog.histories:
+            when = datetime.datetime.strptime(history.created, '%Y-%m-%dT%H:%M:%S.%f%z')
+            if when.replace(tzinfo=None) < since:
+                continue
             for item in history.items:
                 if item.field == 'resolution':
                     status['resolution'] = item.toString
