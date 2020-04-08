@@ -316,13 +316,22 @@ def parse_status_file(jira, filename, issues):
             myissue = match.group(1)
             validissue = True
 
+            # if we ran a query, we might already have fetched the issue
+            # let's try to find the issue there first, otherwise ask Jira
             try:
                 issue = [x for x in issues if str(x) == myissue][0]
                 issue_comments.append((issue, "", ""))
-            except IndexError as e:
-                print('[{}] :  {}'.format(myissue, "Issue not found"))
-                validissue = False
 
+            # IndexError: we had fetched already, but issue is not found
+            # TypeError: issues is None, we haven't queried Jira yet, at all
+            except (IndexError, TypeError) as e:
+                try:
+                    issue = jira.issue(myissue)
+                    issue_comments.append((issue, "", ""))
+                except  Exception as e:
+                    if 'Issue Does Not Exist' in e.text:
+                        print('[{}] :  {}'.format(myissue, e.text))
+                        validissue = False
 
         # Stop parsing entirely.  This needs to be placed before regex_stop
         # or the .* will match and [FIN] won't be processed
@@ -512,7 +521,14 @@ def main(argv):
 
     if get_editor():
         open_editor(filename)
-    parse_status_file(jira, filename, issues)
+
+    try:
+        issues
+    # issues is not defined, we haven't made any query yet.
+    except NameError:
+        parse_status_file(jira, filename, None)
+    else:
+        parse_status_file(jira, filename, issues)
 
 if __name__ == "__main__":
     main(sys.argv)
