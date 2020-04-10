@@ -84,7 +84,10 @@ def enumerate_pending(jira):
 
     since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-    jql = "(project = QLT OR assignee in membersOf('linaro-landing-team-qualcomm')) AND status = 'In Progress'"
+    jql = "(project = QLT OR assignee in membersOf('linaro-landing-team-qualcomm')) \
+           AND status = 'In Progress' \
+           AND issuetype != Initiative \
+           AND issuetype != Epic"
     if user:
        jql += ' AND assignee = "%s"' % add_domain(user)
     vprint(jql)
