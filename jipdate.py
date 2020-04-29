@@ -190,7 +190,7 @@ def get_jira_issues(jira, username):
     if not epics_only:
         issue_types.append("Initiative")
         if not exclude_stories:
-            issue_types.extend(["Story", "Sub-task"])
+            issue_types.extend(["Story", "Sub-task", "Bug"])
     issue_type = "issuetype in (%s)" % ", ".join(issue_types)
 
     status = "status in (\"In Progress\")"
