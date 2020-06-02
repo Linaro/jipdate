@@ -128,6 +128,10 @@ def get_parser():
             help='Query Jira with another Jira username \
             (first.last or first.last@linaro.org)')
 
+    parser.add_argument('--html', required=False, nargs='?', action="store", \
+            const='status.html', \
+            help='Store output to HTML file')
+
     parser.add_argument('-v', required=False, action="store_true", \
             default=False, \
             help='Output some verbose debugging info')
@@ -160,6 +164,47 @@ output = """
 {% endfor %}
 """
 
+output_html = """
+<html>
+<body>
+{%- for assignee in assignees %}
+{{assignee}}:
+<ul>
+{%- for issue in updates | selectattr('assignee', 'equalto', assignee) | list %}
+{%- if loop.index == 1 %}
+<li>Past</li>
+    <ul>
+{%- endif %}
+        <li>{{issue['summary']}} ({{issue['issue']}}) {% if issue['resolution'] %}was {{issue['resolution']}}{% endif %}</li>
+        {%- for c in issue['comments'] %}
+        {%- if loop.index == 1 %}
+            <ul>
+        {%- endif %}
+                <li>{{c}}</li>
+        {%- if loop.index == loop.length %}
+            </ul>
+        {%- endif %}
+        {%- endfor %}
+{%- if loop.index == loop.length %}
+    </ul>
+{%- endif %}
+{%- endfor %}
+{%- for issue in pendings | selectattr('assignee', 'equalto', assignee) | list %}
+{%- if loop.index == 1 %}
+<li>Ongoing</li>
+    <ul>
+{%- endif %}
+        <li>{{issue['summary']}} ({{issue['issue']}})</li>
+{%- if loop.index == loop.length %}
+    </ul>
+{%- endif %}
+{%- endfor %}
+</ul>
+{% endfor %}
+</body>
+</html>
+"""
+
 ################################################################################
 # Main function
 ################################################################################
@@ -184,6 +229,12 @@ def main(argv):
 
     template = Template(output)
     print(template.render(assignees=assignees, updates=updates, pendings=pendings))
+
+    if cfg.args.html:
+        f = open(cfg.args.html, 'w')
+        template = Template(output_html)
+        f.write(template.render(assignees=assignees, updates=updates, pendings=pendings))
+        f.close()
 
 if __name__ == "__main__":
     main(sys.argv)
