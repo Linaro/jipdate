@@ -2,6 +2,7 @@
 from argparse import ArgumentParser
 from subprocess import call
 from time import gmtime, strftime
+from jinja2 import Template
 
 import json
 import os
@@ -134,6 +135,32 @@ def get_parser():
     return parser
 
 ################################################################################
+# Template for outout
+################################################################################
+output = """
+{%- for assignee in assignees %}
+{{assignee}}:
+{%- for issue in updates | selectattr('assignee', 'equalto', assignee) | list %}
+{%- if loop.index == 1 %}
+ * Past
+{%- endif %}
+   * {{issue['summary']}} ({{issue['issue']}}) {% if issue['resolution'] %}was {{issue['resolution']}}{% endif %}
+  {%- for c in issue['comments'] %}
+    {%- for cc in c.splitlines() %}
+    {% if loop.index == 1 %} *{% else %}  {% endif %} {{cc}}
+    {%- endfor %}
+  {%- endfor %}
+{%- endfor %}
+{%- for issue in pendings | selectattr('assignee', 'equalto', assignee) | list %}
+{%- if loop.index == 1 %}
+ * Ongoing
+{%- endif %}
+   * {{issue['summary']}} ({{issue['issue']}})
+ {%- endfor %}
+{% endfor %}
+"""
+
+################################################################################
 # Main function
 ################################################################################
 def main(argv):
@@ -155,32 +182,8 @@ def main(argv):
     # Move "Unassigned" issues to the end
     assignees.sort(key='Unassigned'.__eq__)
 
-    for assignee in assignees:
-        print("%s:" % assignee)
-
-        issues = [u for u in updates if u['assignee'] == assignee]
-        if len(issues) > 0:
-            print(' * Past')
-            for issue in issues:
-                if issue['resolution']:
-                    event = 'was %s' % issue['resolution']
-                else:
-                    event = ''
-
-                print("   * %s (%s) %s" % (issue['summary'], issue['issue'], event))
-                for c in issue['comments']:
-                    cc = c.splitlines()
-                    print("     * " + cc[0])
-                    for cc_line in cc[1:]:
-                        print("       " + cc_line)
-
-        issues = [p for p in pendings if p['assignee'] == assignee]
-        if len(issues) > 0:
-            print(' * Ongoing')
-            for issue in issues:
-                print("   * %s (%s)" % (issue['summary'], issue['issue']))
-
-        print('')
+    template = Template(output)
+    print(template.render(assignees=assignees, updates=updates, pendings=pendings))
 
 if __name__ == "__main__":
     main(sys.argv)
