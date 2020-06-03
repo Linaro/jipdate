@@ -32,9 +32,9 @@ def add_domain(user):
 def enumerate_updates(jira):
     user = cfg.args.user
 
-    since = datetime.datetime.now() - datetime.timedelta(days=7)
+    since = datetime.datetime.now() - datetime.timedelta(days=int(cfg.args.days))
 
-    jql = "(project = QLT OR assignee in membersOf('linaro-landing-team-qualcomm')) AND updatedDate > -7d"
+    jql = "(project = QLT OR assignee in membersOf('linaro-landing-team-qualcomm')) AND updatedDate > -%sd" % cfg.args.days
     if user:
        jql += ' AND assignee = "%s"' % add_domain(user)
     vprint(jql)
@@ -127,6 +127,10 @@ def get_parser():
             default=None, \
             help='Query Jira with another Jira username \
             (first.last or first.last@linaro.org)')
+
+    parser.add_argument('--days', required=False, action="store", \
+            default=7, \
+            help='Period of the report in days')
 
     parser.add_argument('--html', required=False, nargs='?', action="store", \
             const='status.html', \
