@@ -179,7 +179,7 @@ output_html = """
 <li>Past</li>
     <ul>
 {%- endif %}
-        <li>{{issue['summary']}} ({{issue['issue']}}) {% if issue['resolution'] %}was {{issue['resolution']}}{% endif %}</li>
+        <li>{{issue['summary']}} (<a href="https://projects.linaro.org/browse/{{issue['issue']}}">{{issue['issue']}}</a>) {% if issue['resolution'] %}was {{issue['resolution']}}{% endif %}</li>
         {%- for c in issue['comments'] %}
         {%- if loop.index == 1 %}
             <ul>
@@ -198,7 +198,7 @@ output_html = """
 <li>Ongoing</li>
     <ul>
 {%- endif %}
-        <li>{{issue['summary']}} ({{issue['issue']}})</li>
+        <li>{{issue['summary']}} (<a href="https://projects.linaro.org/browse/{{issue['issue']}}">{{issue['issue']}}</a>)</li>
 {%- if loop.index == loop.length %}
     </ul>
 {%- endif %}
