@@ -184,7 +184,7 @@ output_html = """
         {%- if loop.index == 1 %}
             <ul>
         {%- endif %}
-                <li>{{c}}</li>
+                <li>{{'<br>'.join(c.splitlines())}}</li>
         {%- if loop.index == loop.length %}
             </ul>
         {%- endif %}
