@@ -152,7 +152,7 @@ output = """
 {%- if loop.index == 1 %}
  * Past
 {%- endif %}
-   * {{issue['summary']}} ({{issue['issue']}}) {% if issue['resolution'] %}was {{issue['resolution']}}{% endif %}
+   * [{{issue['issue']}}] {{issue['summary']}} {% if issue['resolution'] %}- was {{issue['resolution']|lower}}{% endif %}
   {%- for c in issue['comments'] %}
     {%- for cc in c.splitlines() %}
     {% if loop.index == 1 %} *{% else %}  {% endif %} {{cc}}
@@ -163,7 +163,7 @@ output = """
 {%- if loop.index == 1 %}
  * Ongoing
 {%- endif %}
-   * {{issue['summary']}} ({{issue['issue']}})
+   * [{{issue['issue']}}] {{issue['summary']}}
  {%- endfor %}
 {% endfor %}
 """
@@ -179,7 +179,7 @@ output_html = """
 <li>Past</li>
     <ul>
 {%- endif %}
-        <li>{{issue['summary']}} (<a href="https://projects.linaro.org/browse/{{issue['issue']}}">{{issue['issue']}}</a>) {% if issue['resolution'] %}was {{issue['resolution']}}{% endif %}</li>
+        <li>[<a href="https://projects.linaro.org/browse/{{issue['issue']}}">{{issue['issue']}}</a>] {{issue['summary']}} {% if issue['resolution'] %} - was {{issue['resolution']|lower}}{% endif %}</li>
         {%- for c in issue['comments'] %}
         {%- if loop.index == 1 %}
             <ul>
@@ -198,7 +198,7 @@ output_html = """
 <li>Ongoing</li>
     <ul>
 {%- endif %}
-        <li>{{issue['summary']}} (<a href="https://projects.linaro.org/browse/{{issue['issue']}}">{{issue['issue']}}</a>)</li>
+        <li>[<a href="https://projects.linaro.org/browse/{{issue['issue']}}">{{issue['issue']}}</a>] {{issue['summary']}}</li>
 {%- if loop.index == loop.length %}
     </ul>
 {%- endif %}
