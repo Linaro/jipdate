@@ -31,12 +31,15 @@ def add_domain(user):
 
 def enumerate_updates(jira):
     user = cfg.args.user
+    project = cfg.args.project
 
     since = datetime.datetime.now() - datetime.timedelta(days=int(cfg.args.days))
 
-    jql = "(project = QLT OR assignee in membersOf('linaro-landing-team-qualcomm')) AND updatedDate > -%sd" % cfg.args.days
+    jql = "updatedDate > -%sd" % cfg.args.days
     if user:
        jql += ' AND assignee = "%s"' % add_domain(user)
+    if project:
+       jql += ' AND project = "%s"' % project
     vprint(jql)
 
     my_issues = jira.search_issues(jql, expand="changelog", fields="summary,comment,assignee,created")
@@ -82,15 +85,17 @@ def enumerate_updates(jira):
 
 def enumerate_pending(jira):
     user = cfg.args.user
+    project = cfg.args.project
 
     since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-    jql = "(project = QLT OR assignee in membersOf('linaro-landing-team-qualcomm')) \
-           AND status = 'In Progress' \
+    jql = "status = 'In Progress' \
            AND issuetype != Initiative \
            AND issuetype != Epic"
     if user:
        jql += ' AND assignee = "%s"' % add_domain(user)
+    if project:
+       jql += ' AND project = "%s"' % project
     vprint(jql)
 
     my_issues = jira.search_issues(jql, expand="changelog", fields="summary,assignee,created")
@@ -127,6 +132,11 @@ def get_parser():
             default=None, \
             help='Query Jira with another Jira username \
             (first.last or first.last@linaro.org)')
+
+    parser.add_argument('-p', '--project', required=False, action="store", \
+            default=None, \
+            type = str.upper, \
+            help='Query Jira for only a specifc project')
 
     parser.add_argument('--days', required=False, action="store", \
             default=7, \
