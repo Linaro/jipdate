@@ -29,16 +29,22 @@ def add_domain(user):
         user = user + "@linaro.org"
     return user
 
-def enumerate_updates(jira):
+def default_jql():
     user = cfg.args.user
     project = cfg.args.project
 
+    if project:
+        jql = "project =  '%s' " % project
+    else:
+        jql = "assignee = '%s' " % add_domain(user)
+
+    return jql
+
+def enumerate_updates(jira):
     since = datetime.datetime.now() - datetime.timedelta(days=int(cfg.args.days))
 
-    jql = "updatedDate > -%sd" % cfg.args.days
-    jql += ' AND assignee = "%s"' % add_domain(user)
-    if project:
-       jql += ' AND project = "%s"' % project
+    jql = default_jql()
+    jql += "AND updatedDate > -%sd" % cfg.args.days
     vprint(jql)
 
     my_issues = jira.search_issues(jql, expand="changelog", fields="summary,comment,assignee,created")
@@ -83,17 +89,12 @@ def enumerate_updates(jira):
             yield(status)
 
 def enumerate_pending(jira):
-    user = cfg.args.user
-    project = cfg.args.project
-
     since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-    jql = "status = 'In Progress' \
-           AND issuetype != Initiative \
-           AND issuetype != Epic"
-    jql += ' AND assignee = "%s"' % add_domain(user)
-    if project:
-       jql += ' AND project = "%s"' % project
+    jql = default_jql()
+    jql += "AND status = 'In Progress' \
+            AND issuetype != Initiative \
+            AND issuetype != Epic"
     vprint(jql)
 
     my_issues = jira.search_issues(jql, expand="changelog", fields="summary,assignee,created")
