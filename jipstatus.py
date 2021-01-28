@@ -36,8 +36,7 @@ def enumerate_updates(jira):
     since = datetime.datetime.now() - datetime.timedelta(days=int(cfg.args.days))
 
     jql = "updatedDate > -%sd" % cfg.args.days
-    if user:
-       jql += ' AND assignee = "%s"' % add_domain(user)
+    jql += ' AND assignee = "%s"' % add_domain(user)
     if project:
        jql += ' AND project = "%s"' % project
     vprint(jql)
@@ -92,8 +91,7 @@ def enumerate_pending(jira):
     jql = "status = 'In Progress' \
            AND issuetype != Initiative \
            AND issuetype != Epic"
-    if user:
-       jql += ' AND assignee = "%s"' % add_domain(user)
+    jql += ' AND assignee = "%s"' % add_domain(user)
     if project:
        jql += ' AND project = "%s"' % project
     vprint(jql)
@@ -233,6 +231,9 @@ def main(argv):
     cfg.initiate_config()
 
     jira, username = jiralogin.get_jira_instance(cfg.args.t)
+
+    if cfg.args.user is None:
+        cfg.args.user = username
 
     updates = list(enumerate_updates(jira))
     pendings = list(enumerate_pending(jira))
