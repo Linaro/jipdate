@@ -32,8 +32,13 @@ def add_domain(user):
 def default_jql():
     user = cfg.args.user
     project = cfg.args.project
+    team = cfg.args.team
 
-    if project:
+    if team and project:
+        jql = "(project = %s or assignee in membersOf('%s')) " % (project, team)
+    elif team:
+        jql = "assignee in membersOf('%s') " % team
+    elif project:
         jql = "project =  '%s' " % project
     else:
         jql = "assignee = '%s' " % add_domain(user)
@@ -123,7 +128,7 @@ def get_parser():
     """ Takes care of script argument parsing. """
     parser = ArgumentParser(description='Script used to update comments in Jira')
 
-    parser.add_argument('-t', required=False, action="store_true", \
+    parser.add_argument('--test', required=False, action="store_true", \
             default=False, \
             help='Use the test server')
 
@@ -136,6 +141,11 @@ def get_parser():
             default=None, \
             type = str.upper, \
             help='Query Jira for only a specifc project')
+
+    parser.add_argument('-t', '--team', required=False, action="store", \
+            default=None, \
+            type = str.lower, \
+            help='Query Jira for only issues assigned to members of a specific tema (eg. linaro-landing-team-qualcomm)')
 
     parser.add_argument('--days', required=False, action="store", \
             default=7, \
@@ -231,7 +241,7 @@ def main(argv):
     # accessible everywhere after this call.
     cfg.initiate_config()
 
-    jira, username = jiralogin.get_jira_instance(cfg.args.t)
+    jira, username = jiralogin.get_jira_instance(cfg.args.test)
 
     if cfg.args.user is None:
         cfg.args.user = username
