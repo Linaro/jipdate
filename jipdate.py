@@ -4,6 +4,7 @@ from subprocess import call
 from time import gmtime, strftime
 
 import json
+import logging as log
 import os
 import re
 import sys
@@ -12,7 +13,6 @@ import yaml
 
 # Local files
 import cfg
-from helper import vprint, eprint
 import jiralogin
 
 ################################################################################
@@ -41,7 +41,7 @@ def open_editor(filename):
     elif os.path.exists("/usr/bin/vi"):
         editor = "/usr/bin/vi"
     else:
-        eprint("Could not load an editor.  Please define EDITOR or VISUAL")
+        log.error("Could not load an editor.  Please define EDITOR or VISUAL")
         sys.exit(os.EX_CONFIG)
 
     call(editor.split() + [filename])
@@ -52,7 +52,7 @@ def open_file(filename):
     This will open the user provided file and if there has not been any file
     provided it will create and open a temporary file instead.
     """
-    vprint("filename: %s\n" % filename)
+    log.debug("filename: %s\n" % filename)
     if filename:
         return open(filename, "w")
     else:
@@ -145,18 +145,18 @@ def update_jira(jira, i, c, t):
     """
     if t['transition']:
         if t['resolution']:
-            vprint("Updating Jira issue: %s with transition: %s (%s)" %
+            log.debug("Updating Jira issue: %s with transition: %s (%s)" %
                    (i, t['transition'], t['resolution']))
             jira.transition_issue(i, t['transition'], fields={'resolution':{'id': t['resolution']}})
         else:
-            vprint("Updating Jira issue: %s with transition: %s" % (i, t['transition']))
+            log.debug("Updating Jira issue: %s with transition: %s" % (i, t['transition']))
             jira.transition_issue(i, t['transition'])
 
     if c != "":
-        vprint("Updating Jira issue: %s with comment:" % i)
-        vprint("-- 8< --------------------------------------------------------------------------")
-        vprint("%s" % c)
-        vprint("-- >8 --------------------------------------------------------------------------\n\n")
+        log.debug("Updating Jira issue: %s with comment:" % i)
+        log.debug("-- 8< --------------------------------------------------------------------------")
+        log.debug("%s" % c)
+        log.debug("-- >8 --------------------------------------------------------------------------\n\n")
         jira.add_comment(i, c)
 
 
@@ -171,7 +171,7 @@ def write_last_jira_comment(f, jira, issue):
                         "\n# ".join(c[-1].body.splitlines())
             f.write(comment)
         except UnicodeEncodeError:
-            vprint("Can't encode character")
+            log.debug("Can't encode character")
 
 
 def get_jira_issues(jira, username):
@@ -203,7 +203,7 @@ def get_jira_issues(jira, username):
         user = "\"%s\"" % add_domain(user)
 
     jql = "%s AND assignee = %s AND %s" % (issue_type, user, status)
-    vprint(jql)
+    log.debug(jql)
 
     my_issues = jira.search_issues(jql)
     if my_issues.total > my_issues.maxResults:
@@ -222,9 +222,9 @@ def get_jira_issues(jira, username):
     f.write(subject)
 
     f.write(msg)
-    vprint("Found issue:")
+    log.debug("Found issue:")
     for issue in my_issues:
-        vprint("%s : %s" % (issue, issue.fields.summary))
+        log.debug("%s : %s" % (issue, issue.fields.summary))
 
         if (merge_issue_header()):
             f.write("[%s%s%s]\n" % (issue, get_header_separator(), issue.fields.summary))
@@ -391,7 +391,7 @@ def parse_status_file(jira, filename, issues):
                 transition_summary = " %s => %s" % (issue.fields.status, transition)
 
         if comment == "" and not transition_id:
-            vprint("Issue [%s] has no comment or transitions, not updating the issue" % (issue))
+            log.debug("Issue [%s] has no comment or transitions, not updating the issue" % (issue))
             continue
 
         issue_upload.append((issue, comment,
@@ -478,6 +478,19 @@ def get_editor():
         return True
     return yml_iter
 
+def initialize_logger(args):
+    LOG_FMT = ("[%(levelname)s] %(funcName)s():%(lineno)d   %(message)s")
+    lvl = log.ERROR
+    if args.v:
+        lvl = log.DEBUG
+
+    log.basicConfig(
+        # filename="core.log",
+        level=lvl,
+        format=LOG_FMT,
+        filemode='w')
+
+
 ################################################################################
 # Main function
 ################################################################################
@@ -487,12 +500,14 @@ def main(argv):
     # The parser arguments (cfg.args) are accessible everywhere after this call.
     cfg.args = parser.parse_args()
 
+    initialize_logger(cfg.args)
+
     # This initiates the global yml configuration instance so it will be
     # accessible everywhere after this call.
     cfg.initiate_config()
 
     if not cfg.args.file and not cfg.args.q:
-        eprint("No file provided and not in query mode\n")
+        log.error("No file provided and not in query mode\n")
         parser.print_help()
         sys.exit(os.EX_USAGE)
 
@@ -500,11 +515,11 @@ def main(argv):
 
     if cfg.args.x or cfg.args.e:
         if not cfg.args.q:
-            eprint("Arguments '-x' and '-e' can only be used together with '-q'")
+            log.error("Arguments '-x' and '-e' can only be used together with '-q'")
             sys.exit(os.EX_USAGE)
 
     if cfg.args.p and not cfg.args.q:
-        eprint("Arguments '-p' can only be used together with '-q'")
+        log.error("Arguments '-p' can only be used together with '-q'")
         sys.exit(os.EX_USAGE)
 
     if cfg.args.q:
@@ -516,7 +531,7 @@ def main(argv):
     elif cfg.args.file is not None:
         filename = cfg.args.file
     else:
-        eprint("Trying to run script with unsupported configuration. Try using --help.")
+        log.error("Trying to run script with unsupported configuration. Try using --help.")
         sys.exit(os.EX_USAGE)
 
     if get_editor():

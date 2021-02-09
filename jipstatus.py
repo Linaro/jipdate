@@ -4,17 +4,17 @@ from subprocess import call
 from time import gmtime, strftime
 from jinja2 import Template
 
+import datetime
 import json
+import logging as log
 import os
 import re
 import sys
 import tempfile
 import yaml
-import datetime
 
 # Local files
 import cfg
-from helper import vprint, eprint
 import jiralogin
 
 import pprint
@@ -50,7 +50,7 @@ def enumerate_updates(jira):
 
     jql = default_jql()
     jql += "AND updatedDate > -%sd" % cfg.args.days
-    vprint(jql)
+    log.debug(jql)
 
     my_issues = jira.search_issues(jql, expand="changelog", fields="summary,comment,components,assignee,created")
     if my_issues.total > my_issues.maxResults:
@@ -101,7 +101,7 @@ def enumerate_pending(jira):
     jql += "AND status = 'In Progress' \
             AND issuetype != Initiative \
             AND issuetype != Epic"
-    vprint(jql)
+    log.debug(jql)
 
     my_issues = jira.search_issues(jql, expand="changelog", fields="summary,assignee,created,components")
     if my_issues.total > my_issues.maxResults:
@@ -162,6 +162,19 @@ def get_parser():
             help='Output some verbose debugging info')
 
     return parser
+
+
+def initialize_logger(args):
+    LOG_FMT = ("[%(levelname)s] %(funcName)s():%(lineno)d   %(message)s")
+    lvl = log.ERROR
+    if args.v:
+        lvl = log.DEBUG
+
+    log.basicConfig(
+        # filename="core.log",
+        level=lvl,
+        format=LOG_FMT,
+        filemode='w')
 
 ################################################################################
 # Template for outout
@@ -238,6 +251,8 @@ def main(argv):
 
     # The parser arguments (cfg.args) are accessible everywhere after this call.
     cfg.args = parser.parse_args()
+
+    initialize_logger(cfg.args)
 
     # This initiates the global yml configuration instance so it will be
     # accessible everywhere after this call.
