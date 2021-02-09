@@ -1,12 +1,11 @@
 import os
 import getpass
-
-from helper import *
-from jira import JIRA
-from jira import JIRAError
+import logging as log
+import sys
 
 import cfg
-import helper
+from jira import JIRA
+from jira import JIRAError
 
 def get_username_from_config():
     """ Get the username for Jira from the config file. """
@@ -15,7 +14,7 @@ def get_username_from_config():
     try:
         username = cfg.yml_config['username']
     except:
-        vprint("No username found in config")
+        log.debug("username not set in config")
 
     return username
 
@@ -26,7 +25,7 @@ def get_username_from_env():
     try:
         username = os.environ['JIRA_USERNAME']
     except KeyError:
-        vprint("No user name found in JIRA_USERNAME environment variable")
+        log.debug("JIRA_USERNAME environment variable not set")
 
     return username
 
@@ -35,7 +34,7 @@ def get_username_from_input():
     """ Get the username for Jira from terminal. """
     username = input("Username (john.doe@foo.org): ").lower().strip()
     if len(username) == 0:
-        eprint("Empty username not allowed")
+        log.error("Empty username not allowed")
         sys.exit(os.EX_NOUSER)
     else:
         return username
@@ -66,7 +65,7 @@ def get_username():
             store_username_in_config(username)
         return username
     else:
-        eprint("No JIRA_USERNAME exported and no username found in config.yml")
+        log.error("No JIRA_USERNAME exported and no username found in config.yml")
         sys.exit(os.EX_NOUSER)
 
 
@@ -79,11 +78,11 @@ def get_password():
         password = os.environ['JIRA_PASSWORD']
         return password
     except KeyError:
-        vprint("Forgot to export JIRA_PASSWORD?")
+        log.debug("Forgot to export JIRA_PASSWORD?")
 
     password = getpass.getpass()
     if len(password) == 0:
-        eprint("JIRA_PASSWORD not exported or empty password provided")
+        log.error("JIRA_PASSWORD not exported or empty password provided")
         sys.exit(os.EX_NOPERM)
 
     return password
@@ -106,7 +105,7 @@ def get_jira_instance(use_test_server):
         j = JIRA(cfg.server, basic_auth=credentials), username
     except JIRAError as e:
         if e.text.find('CAPTCHA_CHALLENGE') != -1:
-            eprint('Captcha verification has been triggered by '\
+            log.error('Captcha verification has been triggered by '\
                    'JIRA - please go to JIRA using your web '\
                    'browser, log out of JIRA, log back in '\
                    'entering the captcha; after that is done, '\

@@ -1,9 +1,7 @@
+import logging as log
 import os
 import sys
 import yaml
-
-# Local files
-from helper import vprint, eprint
 
 TEST_SERVER = 'https://dev-projects.linaro.org'
 PRODUCTION_SERVER = 'https://projects.linaro.org'
@@ -98,6 +96,6 @@ def initiate_config():
     if not os.path.isfile(config_file):
         create_default_config()
 
-    vprint("Using config file: %s" % config_file)
+    log.debug("Using config file: %s" % config_file)
     with open(config_file, 'r') as yml:
         yml_config = yaml.load(yml, Loader=yaml.FullLoader)
