@@ -40,6 +40,17 @@ Ubuntu / Debian based systems
     $ cd jipdate
     $ pip3 install --user -r requirements.txt 
 
+Fedora / Red Hat based systems
+==============================
+.. code-block:: bash
+    :linenos:
+    :emphasize-lines: 2, 5
+
+    $ sudo dnf -y install python3-pyyaml python3-jira
+    $ git clone https://github.com/Linaro/jipdate.git
+    $ cd jipdate
+    $ pip3 install --user -r requirements.txt
+
 Arch Linux
 ==========
 .. code-block:: bash
