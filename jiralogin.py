@@ -94,9 +94,6 @@ def get_jira_instance(use_test_server):
     caller.
     """
     username = get_username()
-    password = get_password()
-
-    credentials=(username, password)
 
     # Get Jira Server details. Check first if using the test server
     # then try user config file, then default from cfg.py
@@ -106,9 +103,19 @@ def get_jira_instance(use_test_server):
         server = cfg.yml_config.get('server', cfg.server)
 
     url = server.get('url')
+    token = server.get('token')
+
+    # password based authentication
+    if not token:
+        password = get_password()
 
     try:
-        j = JIRA(url, basic_auth=credentials), username
+        if token:
+            log.debug("Accessing %s with %s using token based authentication" % (url, username))
+            j = JIRA(url, basic_auth=(username, token)), username
+        else:
+            log.debug("Accessing %s with %s using password based authentication" % (url, username))
+            j = JIRA(url, basic_auth=(username, password)), username
     except JIRAError as e:
         if e.text.find('CAPTCHA_CHALLENGE') != -1:
             log.error('Captcha verification has been triggered by '\
