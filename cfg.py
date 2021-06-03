@@ -41,6 +41,7 @@ version: 1
 # Jira server information
 #server:
 #  url: https://linaro.atlassian.net
+#  token: abcdefghijkl
 
 # Extra comments added to each Jira issue (multiline is OK)
 comments:
