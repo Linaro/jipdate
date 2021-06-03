@@ -3,8 +3,8 @@ import os
 import sys
 import yaml
 
-TEST_SERVER = 'https://dev-projects.linaro.org'
-PRODUCTION_SERVER = 'https://projects.linaro.org'
+TEST_SERVER = { 'url' : 'https://dev-projects.linaro.org' }
+PRODUCTION_SERVER = { 'url' : 'https://projects.linaro.org' }
 server = PRODUCTION_SERVER
 
 args = None
