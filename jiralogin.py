@@ -98,10 +98,14 @@ def get_jira_instance(use_test_server):
 
     credentials=(username, password)
 
+    # Get Jira Server details. Check first if using the test server
+    # then try user config file, then default from cfg.py
     if use_test_server:
-        cfg.server = cfg.TEST_SERVER
+        server = cfg.TEST_SERVER
+    else:
+        server = cfg.yml_config.get('server', cfg.server)
 
-    url = cfg.server.get('url')
+    url = server.get('url')
 
     try:
         j = JIRA(url, basic_auth=credentials), username
