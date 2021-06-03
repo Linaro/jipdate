@@ -246,14 +246,7 @@ def get_jira_issues(jira, username):
 def should_update():
     """ A yes or no dialogue. """
     while True:
-        target = ""
-        if cfg.server.get('url') == cfg.PRODUCTION_SERVER.get('url'):
-            target = "OFFICIAL!"
-        elif cfg.server.get('url') == cfg.TEST_SERVER.get('url'):
-            target = "TEST"
-
-        print("Server to update: %s" % target)
-        print(" %s\n" % cfg.server.get('url'));
+        print("Server to update: %s\n" % cfg.server.get('url'));
         answer = input("Are you sure you want to update Jira with the " +
                            "information above? [y/n] ").lower().strip()
         if answer in set(['y', 'n']):

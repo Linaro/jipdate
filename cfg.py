@@ -38,6 +38,10 @@ def create_default_config():
 # For use in future (backwards compatibility)
 version: 1
 
+# Jira server information
+#server:
+#  url: https://linaro.atlassian.net
+
 # Extra comments added to each Jira issue (multiline is OK)
 comments:
         - "# No updates since last week."
