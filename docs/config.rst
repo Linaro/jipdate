@@ -32,6 +32,11 @@ looks like this:
     # For use in future (backwards compatibility)
     version: 1
 
+    # Jira server information
+    #server:
+    #  url: https://linaro.atlassian.net
+    #  token: abcdefghijkl
+
     # Extra comments added to each Jira issue (multiline is OK)
     comments:
         - "# No updates since last week."
@@ -238,6 +243,27 @@ Jipdate, e.g., something like:
 
     export EDITOR=vim
 
+server
+------
+Jipdate will use a default (Linaro) Jira server, but the user can set the Jira
+server in the configuration file. Authentication is required when querying a
+Jira server, and jipdate supports password based authentication, as well as
+token based. Using token authentication is considered more secure than
+password. The `server` configuration must include at least an `url` attribute. A
+`token` attribute can be added optionally.
+
+When the `token` attribute is present, Jipdate will use token based
+authentication. Otherwise, it will use password based authentication.
+
+Here is an example to show how to add a `server` entry in the configuration
+file, assuming token based authentication:
+
+.. code-block:: yaml
+
+    # Jira server information
+    server:
+      url: https://linaro.atlassian.net
+      token: abcdefghijkl
 
 .. _username:
 
