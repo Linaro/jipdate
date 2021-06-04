@@ -31,7 +31,7 @@ Ubuntu / Debian based systems
 =============================
 .. code-block:: bash
     :linenos:
-    :emphasize-lines: 2, 5
+    :emphasize-lines: 3, 6
 
     $ sudo apt update 
     $ sudo apt upgrade
@@ -44,7 +44,7 @@ Fedora / Red Hat based systems
 ==============================
 .. code-block:: bash
     :linenos:
-    :emphasize-lines: 2, 5
+    :emphasize-lines: 2, 4
 
     $ sudo dnf -y install python3-pyyaml python3-jira
     $ git clone https://github.com/Linaro/jipdate.git
