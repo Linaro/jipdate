@@ -1,8 +1,9 @@
 .. _jipdate_examples:
 
-########
-Examples
-########
+################
+Jipdate Examples
+################
+
 On this page you will find a list of examples of things that a Jipdate user
 might want to do. It should be noted that this is not a complete list, but will
 probably list the use cases that are most commonly used.c. Likewise each and
