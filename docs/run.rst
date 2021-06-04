@@ -13,6 +13,23 @@ Running it without any parameters (or with ``-h``) will give you a list of all
 parameters. If you want to see examples of how to combine flags/parameters, then
 head over to :ref:`jipdate_examples`.
 
+#########################
+Run Jipstatus
+#########################
+The most straight forward way is to simply run the script
+
+.. code-block:: bash
+
+    $ ./jipstatus
+
+Running it without any parameters will show all tickets updates for the current
+user in the last 7 days, including newly created tickets, state transitions, and
+all updates.
+
+Running with ``-h`` will give you a list of all parameters. If you want to see
+examples of how to combine flags/parameters, then head over to
+:ref:`jipstatus_examples`.
+
 Environment variables
 =====================
 You can export both the password and the username with environment variables and

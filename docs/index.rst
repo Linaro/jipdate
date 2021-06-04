@@ -8,6 +8,7 @@ Jipdate
     about
     install
     run
-    examples
+    jipdate
+    jipstatus
     config
     problems
