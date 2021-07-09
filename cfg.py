@@ -5,7 +5,6 @@ import yaml
 
 TEST_SERVER = { 'url' : 'https://dev-projects.linaro.org' }
 PRODUCTION_SERVER = { 'url' : 'https://projects.linaro.org' }
-server = PRODUCTION_SERVER
 
 args = None
 
@@ -88,6 +87,16 @@ def get_config_file():
 
     # If nothing was found, then return the default file
     return config_path + "/" + config_filename
+
+
+def get_server(use_test_server=False):
+    # Get Jira Server details. Check first if using the test server
+    # then try user config file, then default from cfg.py
+    server = TEST_SERVER
+    if use_test_server is False:
+        server = yml_config.get('server', PRODUCTION_SERVER)
+
+    return server
 
 
 def initiate_config():

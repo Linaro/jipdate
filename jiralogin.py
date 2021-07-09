@@ -95,13 +95,7 @@ def get_jira_instance(use_test_server):
     """
     username = get_username()
 
-    # Get Jira Server details. Check first if using the test server
-    # then try user config file, then default from cfg.py
-    if use_test_server:
-        server = cfg.TEST_SERVER
-    else:
-        server = cfg.yml_config.get('server', cfg.server)
-
+    server = cfg.get_server(use_test_server)
     url = server.get('url')
     token = server.get('token')
 
