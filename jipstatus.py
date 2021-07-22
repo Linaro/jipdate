@@ -213,7 +213,7 @@ output_html = """
 <li>Past</li>
     <ul>
 {%- endif %}
-        <li>[<a href="https://projects.linaro.org/browse/{{issue['issue']}}">{{issue['issue']}}</a>]{% if issue['components'] |length > 0 %} [{{issue['components']|join(',')}}]{% endif %} {{issue['summary']}} {% if issue['resolution'] %} - was {{issue['resolution']|lower}}{% endif %}</li>
+        <li>[<a href="https://linaro.atlassian.net/browse/{{issue['issue']}}">{{issue['issue']}}</a>]{% if issue['components'] |length > 0 %} [{{issue['components']|join(',')}}]{% endif %} {{issue['summary']}} {% if issue['resolution'] %} - was {{issue['resolution']|lower}}{% endif %}</li>
         {%- for c in issue['comments'] %}
         {%- if loop.index == 1 %}
             <ul>
@@ -232,7 +232,7 @@ output_html = """
 <li>Ongoing</li>
     <ul>
 {%- endif %}
-        <li>[<a href="https://projects.linaro.org/browse/{{issue['issue']}}">{{issue['issue']}}</a>]{% if issue['components'] |length > 0 %} [{{issue['components']|join(',')}}]{% endif %} {{issue['summary']}}</li>
+        <li>[<a href="https://linaro.atlassian.net/browse/{{issue['issue']}}">{{issue['issue']}}</a>]{% if issue['components'] |length > 0 %} [{{issue['components']|join(',')}}]{% endif %} {{issue['summary']}}</li>
 {%- if loop.index == loop.length %}
     </ul>
 {%- endif %}
