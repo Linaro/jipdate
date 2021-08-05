@@ -186,7 +186,7 @@ output = """
 {%- if loop.index == 1 %}
  * Past
 {%- endif %}
-   * [{{issue['issue']}}]{% if issue['components'] |length > 0 %} [{{issue['components']|join(',')}}]{% endif %} {{issue['summary']}} {% if issue['resolution'] %}- was {{issue['resolution']|lower}}{% endif %}
+   * [{{issue['issue']}}] {{issue['summary']}} {% if issue['resolution'] %}- was {{issue['resolution']|lower}}{% endif %}
   {%- for c in issue['comments'] %}
     {%- for cc in c.splitlines() %}
     {% if loop.index == 1 %} *{% else %}  {% endif %} {{cc}}
@@ -197,7 +197,7 @@ output = """
 {%- if loop.index == 1 %}
  * Ongoing
 {%- endif %}
-   * [{{issue['issue']}}]{% if issue['components'] |length > 0 %} [{{issue['components']|join(',')}}]{% endif %} {{issue['summary']}}
+   * [{{issue['issue']}}] {{issue['summary']}}
  {%- endfor %}
 {% endfor %}
 """
@@ -213,7 +213,7 @@ output_html = """
 <li>Past</li>
     <ul>
 {%- endif %}
-        <li>[<a href="{{url}}/browse/{{issue['issue']}}">{{issue['issue']}}</a>]{% if issue['components'] |length > 0 %} [{{issue['components']|join(',')}}]{% endif %} {{issue['summary']}} {% if issue['resolution'] %} - was {{issue['resolution']|lower}}{% endif %}</li>
+        <li>[<a href="{{url}}/browse/{{issue['issue']}}">{{issue['issue']}}</a>] {{issue['summary']}} {% if issue['resolution'] %} - was {{issue['resolution']|lower}}{% endif %}</li>
         {%- for c in issue['comments'] %}
         {%- if loop.index == 1 %}
             <ul>
@@ -232,7 +232,7 @@ output_html = """
 <li>Ongoing</li>
     <ul>
 {%- endif %}
-        <li>[<a href="{{url}}/browse/{{issue['issue']}}">{{issue['issue']}}</a>]{% if issue['components'] |length > 0 %} [{{issue['components']|join(',')}}]{% endif %} {{issue['summary']}}</li>
+        <li>[<a href="{{url}}/browse/{{issue['issue']}}">{{issue['issue']}}</a>] {{issue['summary']}}</li>
 {%- if loop.index == loop.length %}
     </ul>
 {%- endif %}
