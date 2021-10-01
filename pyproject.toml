@@ -1,0 +1,24 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "jipdate"
+authors = [{name = "Joakim Bech", email = "joakim.bech@linaro.org"}]
+readme = "README.md"
+classifiers = ["License :: OSI Approved :: MIT License"]
+requires-python = ">=3.6"
+dependencies = [
+    "jinja2",
+    "jira",
+    "PyYAML",
+]
+dynamic = ["version", "description"]
+
+[project.urls]
+Documentation = "https://jipdate.readthedocs.io/en/latest/"
+
+[project.scripts]
+jipdate="jipdate.jipdate:main"
+jipfp="jipdate.jipfp:main"
+jipstatus="jipdate.jipstatus:main"
