@@ -3,6 +3,7 @@
 
 from argparse import ArgumentParser
 
+import logging as log
 import os
 import re
 import sys
@@ -12,7 +13,6 @@ import yaml
 # Local files
 import cfg
 import jiralogin
-from helper import vprint, eprint
 
 ################################################################################
 # Class node
@@ -208,7 +208,7 @@ def open_file(filename):
     This will open the user provided file and if there has not been any file
     provided it will create and open a temporary file instead.
     """
-    vprint("filename: %s\n" % filename)
+    log.debug("filename: %s\n" % filename)
     if filename:
         return open(filename, "w")
     else:
@@ -360,7 +360,7 @@ def build_story_node(jira, story_key, d_handled=None, epic_node=None):
                 story.add_parent(parent_node)
                 parent_node.add_child(story)
             else:
-                vprint("Didn't find any parent")
+                log.debug("Didn't find any parent")
 
     print(story)
     d_handled[story.get_key()] = [story, si]
@@ -412,7 +412,7 @@ def build_epics_node(jira, epic_key, d_handled=None, initiative_node=None):
                 epic.add_parent(parent_node)
                 parent_node.add_child(epic)
             else:
-                vprint("Didn't find any parent")
+                log.debug("Didn't find any parent")
 
     d_handled[epic.get_key()] = [epic, ei]
 
@@ -501,17 +501,17 @@ def build_orphans_tree(jira, key, d_handled):
     # should get them nicely layed out in the orphan part of the tree.
 
     nodes = []
-    vprint("Orphan Initiatives ...")
+    log.debug("Orphan Initiatives ...")
     for i in orphans_initiatives:
         node = build_initiatives_node(jira, i, d_handled)
         nodes.append(node)
 
-    vprint("Orphan Epics ...")
+    log.debug("Orphan Epics ...")
     for i in orphans_epics:
         node = build_epics_node(jira, str(i.key), d_handled)
         nodes.append(node)
 
-    vprint("Orphan Stories ...")
+    log.debug("Orphan Stories ...")
     for i in orphans_stories:
         node = build_story_node(jira, str(i.key), d_handled)
         nodes.append(node)
@@ -537,7 +537,7 @@ def initiate_config():
     if not os.path.isfile(cfg.config_file):
         create_default_config()
 
-    vprint("Using config file: %s" % cfg.config_file)
+    log.debug("Using config file: %s" % cfg.config_file)
     with open(cfg.config_file, 'r') as yml:
         cfg.yml_config = yaml.load(yml)
 
