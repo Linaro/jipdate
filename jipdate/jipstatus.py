@@ -14,8 +14,8 @@ import tempfile
 import yaml
 
 # Local files
-import cfg
-import jiralogin
+from jipdate import cfg
+from jipdate import jiralogin
 
 import pprint
 pprint = pprint.PrettyPrinter().pprint
@@ -249,7 +249,8 @@ output_html = """
 ################################################################################
 # Main function
 ################################################################################
-def main(argv):
+def main():
+    argv = sys.argv
     parser = get_parser()
 
     # The parser arguments (cfg.args) are accessible everywhere after this call.
@@ -283,4 +284,4 @@ def main(argv):
         f.close()
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()

@@ -12,8 +12,8 @@ import tempfile
 import yaml
 
 # Local files
-import cfg
-import jiralogin
+from jipdate import cfg
+from jipdate import jiralogin
 
 ################################################################################
 # Helper functions
@@ -488,7 +488,8 @@ def initialize_logger(args):
 ################################################################################
 # Main function
 ################################################################################
-def main(argv):
+def main():
+    argv = sys.argv
     parser = get_parser()
 
     # The parser arguments (cfg.args) are accessible everywhere after this call.
@@ -540,4 +541,4 @@ def main(argv):
         parse_status_file(jira, filename, issues)
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()

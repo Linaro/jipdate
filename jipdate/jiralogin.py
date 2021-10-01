@@ -3,7 +3,7 @@ import getpass
 import logging as log
 import sys
 
-import cfg
+from jipdate import cfg
 from jira import JIRA
 from jira import JIRAError
 
