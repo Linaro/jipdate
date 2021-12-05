@@ -37,6 +37,10 @@ looks like this:
     #  url: https://linaro.atlassian.net
     #  token: abcdefghijkl
 
+    #test_server:
+    #  url: https://<name_of_test_instance>.atlassian.net
+    #  token: abcdefghijkl
+
     # Extra comments added to each Jira issue (multiline is OK)
     comments:
         - "# No updates since last week."

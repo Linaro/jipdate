@@ -42,6 +42,10 @@ version: 1
 #  url: https://linaro.atlassian.net
 #  token: abcdefghijkl
 
+#test_server:
+#  url: https://<name_of_test_instance>.atlassian.net
+#  token: abcdefghijkl
+
 # Extra comments added to each Jira issue (multiline is OK)
 comments:
         - "# No updates since last week."
@@ -92,9 +96,10 @@ def get_config_file():
 def get_server(use_test_server=False):
     # Get Jira Server details. Check first if using the test server
     # then try user config file, then default from cfg.py
-    server = TEST_SERVER
     if use_test_server is False:
         server = yml_config.get('server', PRODUCTION_SERVER)
+    else:
+        server = yml_config.get('test_server', TEST_SERVER)
 
     return server
 
