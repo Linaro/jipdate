@@ -62,3 +62,15 @@ Arch Linux
     $ git clone https://github.com/Linaro/jipdate.git
     $ cd jipdate
     $ pip3 install --user -r requirements.txt 
+    
+Mac OS (v12 Monterey or later)
+==============================
+.. code-block:: bash
+    :linenos:   
+    :emphasize-lines: 1, 3, 5
+    
+    $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    $ brew install python git
+    $ git clone https://github.com/Linaro/jipdate.git
+    $ cd jipdate
+    $ pip3 install --user -r requirements.txt
