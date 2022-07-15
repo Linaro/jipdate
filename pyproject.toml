@@ -19,6 +19,7 @@ dynamic = ["version", "description"]
 Documentation = "https://jipdate.readthedocs.io/en/latest/"
 
 [project.scripts]
+jipcreate="jipdate.jipcreate:main"
 jipdate="jipdate.jipdate:main"
 jipfp="jipdate.jipfp:main"
 jipstatus="jipdate.jipstatus:main"
