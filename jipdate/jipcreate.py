@@ -173,8 +173,12 @@ def main():
                                 print(f"Field {jira_field_to_yaml[field]} required but not set.")
                                 sys.exit(os.EX_USAGE)
 
-                    server = cfg.get_server()
-                    if not cfg.args.dry_run:
+                    if cfg.args.dry_run:
+                        print(f"This issue would have been created when running without '--dry-run':")
+                        for field in fields.keys():
+                            print(f"{field}: {fields[field]}")
+                    else:
+                        server = cfg.get_server()
                         new_issue = jira.create_issue(fields=fields)
                         print(f"New issue created: {server.get('url')}/browse/{new_issue}")
                 else:
