@@ -160,10 +160,19 @@ def main():
                                 sprint_found = True
 
                 if sprint_found:
+                    # Check if all feilds are possible to set in this issuetype and project.
+                    for field in fields.keys():
+                        if field not in issue_fields_dict.keys():
+                            print(f"Field {field} set by script but not possible for issuetype and project in Jira.")
+                            sys.exit(os.EX_USAGE)
+
+                    # Check fields required by Jira.
                     for field in issue_fields_dict.keys():
                         if issue_fields_dict[field]['required'] and not issue_fields_dict[field]['hasDefaultValue']:
                             if field not in fields.keys():
                                 print(f"Field {jira_field_to_yaml[field]} required but not set.")
+                                sys.exit(os.EX_USAGE)
+
                     server = cfg.get_server()
                     if not cfg.args.dry_run:
                         new_issue = jira.create_issue(fields=fields)
