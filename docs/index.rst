@@ -9,6 +9,7 @@ Jipdate
     install
     run
     jipdate
+    jipcreate
     jipstatus
     config
     problems
