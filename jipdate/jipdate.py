@@ -138,7 +138,7 @@ def get_parser():
 ################################################################################
 # Jira functions
 ################################################################################
-def update_jira(jira, i, c, t):
+def update_jira(jira, i, c, t, ts=None):
     """
     This is the function that do the actual updates to Jira and in this case it
     is adding comments to a certain issue.
@@ -158,6 +158,8 @@ def update_jira(jira, i, c, t):
         log.debug("%s" % c)
         log.debug("-- >8 --------------------------------------------------------------------------\n\n")
         jira.add_comment(i, c)
+        if ts:
+            jira.add_worklog(i, timeSpent=ts, comment=c)
 
 
 def write_last_jira_comment(f, jira, issue):
@@ -286,6 +288,10 @@ def parse_status_file(jira, filename, issues):
     # Contains the status text, it could be a file or a status email
     status = ""
 
+    # Regexp to match for a time spent update, this will remove 'Time spent:'
+    # from the match:
+    regex_timespent = r'(^Time spent:) \d+\w\n$'
+
     # List of resolutions (when doing a transition to Resolved). Query once globally.
     resolution_map = dict([(t.name.title(), t.id) for t in jira.resolutions()])
 
@@ -314,14 +320,14 @@ def parse_status_file(jira, filename, issues):
             # let's try to find the issue there first, otherwise ask Jira
             try:
                 issue = [x for x in issues if str(x) == myissue][0]
-                issue_comments.append((issue, "", ""))
+                issue_comments.append((issue, "", "", None))
 
             # IndexError: we had fetched already, but issue is not found
             # TypeError: issues is None, we haven't queried Jira yet, at all
             except (IndexError, TypeError) as e:
                 try:
                     issue = jira.issue(myissue)
-                    issue_comments.append((issue, "", ""))
+                    issue_comments.append((issue, "", "", None))
                 except  Exception as e:
                     if 'Issue Does Not Exist' in e.text:
                         print('[{}] :  {}'.format(myissue, e.text))
@@ -333,7 +339,7 @@ def parse_status_file(jira, filename, issues):
             break
         # If we have non-JIRA issue tags, stop parsing until we find a valid tag
         elif re.search(regex_stop, line):
-                validissue = False
+            validissue = False
         elif transition and validissue:
             # If we have a match, then the new status should be first in the
             # group. Jira always expect the name of the state transitions to be
@@ -341,18 +347,22 @@ def parse_status_file(jira, filename, issues):
             # means that it doesn't matter if the user enter all lower case,
             # mixed or all upper case. All of them will work.
             new_status = transition.groups()[0].title()
-            (i,c,_) = issue_comments[-1]
-            issue_comments[-1] = (i, c, new_status)
+            (i,c,_,ts) = issue_comments[-1]
+            issue_comments[-1] = (i, c, new_status, ts)
+        elif re.search(regex_timespent, line, re.IGNORECASE):
+            timespent = line.split(':')[1].strip()
+            (i,c,t,_) = issue_comments[-1]
+            issue_comments[-1] = (i, c, t, timespent)
         else:
             # Don't add lines with comments
             if (line[0] != "#" and issue_comments and validissue):
-                (i,c,t) = issue_comments[-1]
-                issue_comments[-1] = (i, c + line, t)
+                (i,c,t,ts) = issue_comments[-1]
+                issue_comments[-1] = (i, c + line, t, ts)
 
     issue_upload = []
     print("These JIRA cards will be updated as follows:\n")
     for (idx,t) in enumerate(issue_comments):
-        (issue,comment,transition) = issue_comments[idx]
+        (issue,comment,transition,timespent) = issue_comments[idx]
 
         # Strip beginning  and trailing blank lines
         comment = comment.strip('\n')
@@ -389,8 +399,9 @@ def parse_status_file(jira, filename, issues):
             continue
 
         issue_upload.append((issue, comment,
-                             {'transition': transition_id, 'resolution': resolution_id}))
+                             {'transition': transition_id, 'resolution': resolution_id}, timespent))
         print("[%s]%s\n  %s" % (issue, transition_summary, "\n  ".join(comment.splitlines())))
+        if timespent: print(" Time spent: %s" % timespent)
     print("")
 
     issue_comments = issue_upload
@@ -404,8 +415,8 @@ def parse_status_file(jira, filename, issues):
         sys.exit()
 
     # if we found something, let's update jira
-    for (issue,comment,transition) in issue_comments:
-        update_jira(jira, issue, comment, transition)
+    for (issue,comment,transition,timespent) in issue_comments:
+        update_jira(jira, issue, comment, transition, timespent)
 
     print("Successfully updated your Jira tickets!\n")
     if not cfg.args.s:
