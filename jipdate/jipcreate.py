@@ -71,6 +71,18 @@ def initialize_logger(args):
         filemode='w')
 
 
+jira_field_to_yaml = {
+        'issuetype' : 'IssueType',
+        'project' : 'Project',
+        'summary' : 'Summary',
+        'description' : 'Description',
+        'assignee' : 'AssigneeEmail',
+        'customfield_10014' : 'EpicLink',
+        'timetracking' : 'OriginalEstimate',
+        'components' : 'Components',
+        'customfield_10020' : 'Sprint',
+        }
+
 ################################################################################
 # Main function
 ################################################################################
@@ -99,21 +111,27 @@ def main():
         issues = parse_issue_file(filename)
         for issue in issues:
             # We should only find one project and one issue type otherwise something is wrong
-            issue_meta_data = jira.createmeta(projectKeys=issue['Project'], issuetypeNames=issue['IssueType'], expand='projects.issuetypes.fields')
             issue_fields_dict = {}
             try:
+                issue_meta_data = jira.createmeta(projectKeys=issue['Project'], issuetypeNames=issue['IssueType'], expand='projects.issuetypes.fields')
                 issue_fields_dict = issue_meta_data['projects'][0]['issuetypes'][0]['fields']
-            except IndexError:
-                print('Could not get meta data from Jira for project \"' + issue['Project'] + '\" and issue type \"' + issue['IssueType'] + '\"')
+            except (IndexError, KeyError):
+                print(f"Please specify 'Project' and 'IssueType'.")
 
             if issue_fields_dict:
                 fields = {
                     'project': {'key': issue['Project']},
-                    'summary': issue['Summary'],
-                    'description': issue['Description'],
                     'issuetype': {'name': issue['IssueType']},
-                    'timetracking': {'originalEstimate': issue['OriginalEstimate']}
                 }
+
+                if 'Summary' in issue.keys():
+                    fields['summary'] = issue['Summary']
+
+                if 'Description' in issue.keys():
+                    fields['description'] = issue['Description']
+
+                if 'OriginalEstimate' in issue.keys():
+                    fields['timetracking'] = {'originalEstimate': issue['OriginalEstimate']}
 
                 if 'AssigneeEmail' in issue.keys():
                     assignee = jira.search_assignable_users_for_issues(query=issue['AssigneeEmail'], project=issue['Project'])
@@ -124,10 +142,10 @@ def main():
                 if 'EpicLink' in issue.keys():
                     fields['customfield_10014'] = issue['EpicLink']
 
-                if 'Component' in issue.keys():
+                if 'Components' in issue.keys():
                     components = jira.project_components(issue['Project'])
                     for c in components:
-                        if c.name == issue['Component']:
+                        if c.name == issue['Components']:
                             fields['components'] = [{'id': str(c.id)}]
 
                 sprint_found = True  # Only indicate sprint not found in case a sprint has been specified.
@@ -139,14 +157,17 @@ def main():
                         for sprint in sprints_in_board:
                             if sprint.name == issue['Sprint']:
                                 fields['customfield_10020'] = sprint.id
-                                print('Found '+ sprint.name + ' ' + str(sprint.id))
                                 sprint_found = True
 
                 if sprint_found:
-                    print(fields)
-                    new_issue = jira.create_issue(fields=fields)
+                    for field in issue_fields_dict.keys():
+                        if issue_fields_dict[field]['required'] and not issue_fields_dict[field]['hasDefaultValue']:
+                            if field not in fields.keys():
+                                print(f"Field {jira_field_to_yaml[field]} required but not set.")
                     server = cfg.get_server()
-                    print(f"New issue created: {server.get('url')}/browse/{new_issue}")
+                    if not cfg.args.dry_run:
+                        new_issue = jira.create_issue(fields=fields)
+                        print(f"New issue created: {server.get('url')}/browse/{new_issue}")
                 else:
                     print('Sprint \"' + issue['Sprint'] + '\" not found in project ' + issue['Project'])
     else:
