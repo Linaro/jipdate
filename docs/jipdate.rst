@@ -123,6 +123,24 @@ state for it, i.e., change like we've done at line 4 here.
     you get it wrong, Jipdate will return an error and also show the possible
     combinations. Example. ``todo`` is wrong, but ``to do`` is correct!
 
+.. code-block:: bash
+
+    ...
+    [SWG-368]
+    # Header: Demo / Test issue three
+    # Type: Epic
+    Status: In progress
+    Time spent: 4h
+    Updates since last week.
+    ...
+
+Here you can see ``Status`` in ``In progress``, and ``Time spent`` on this issue is ste to 4 hours. There are also some updates, and these updates ``Updates since last week.`` will be updated under ``Comments`` and under ``Work log`` in that ticket.
+
+.. note::
+
+    ``Time spent`` can be written in the formats: ``5m``, ``5h``, ``5d`` and ``5w``,
+    and that means ``m (minutes), h (hours), d (days), w (weeks)``.
+
 Updates with status reports
 ===========================
 
