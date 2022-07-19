@@ -115,6 +115,9 @@ def main():
             try:
                 issue_meta_data = jira.createmeta(projectKeys=issue['Project'], issuetypeNames=issue['IssueType'], expand='projects.issuetypes.fields')
                 issue_fields_dict = issue_meta_data['projects'][0]['issuetypes'][0]['fields']
+                log.debug(f"Project: {issue['Project']}")
+                log.debug(f"IssueType: {issue['IssueType']}")
+                log.debug(f"issue fields dict: {issue_fields_dict}")
             except (IndexError, KeyError):
                 print(f"Please specify 'Project' and 'IssueType'.")
 
@@ -135,6 +138,8 @@ def main():
 
                 if 'AssigneeEmail' in issue.keys():
                     assignee = jira.search_assignable_users_for_issues(query=issue['AssigneeEmail'], project=issue['Project'])
+                    log.debug(f"Assignee email: {issue['AssigneeEmail']}")
+                    log.debug(f"Assignee: {assignee}")
                     # We assume that the first entry in the returned user array is the one we want
                     if len(assignee) > 0:
                         fields['assignee'] = {'id': assignee[0].accountId}
@@ -152,9 +157,13 @@ def main():
                 if 'Sprint' in issue.keys():
                     sprint_found = False
                     boards_in_project = jira.boards(projectKeyOrID=issue['Project'])
+                    log.debug(f"Boards:")
                     for board in boards_in_project:
+                        log.debug(f"* {board}")
                         sprints_in_board = jira.sprints(board_id=board.id)
+                        log.debug(f" + Sprints:")
                         for sprint in sprints_in_board:
+                            log.debug(f"  - {sprint}")
                             if sprint.name == issue['Sprint']:
                                 fields['customfield_10020'] = sprint.id
                                 sprint_found = True
