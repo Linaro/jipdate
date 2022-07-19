@@ -145,7 +145,8 @@ def main():
                 if sprint_found:
                     print(fields)
                     new_issue = jira.create_issue(fields=fields)
-                    print(new_issue)
+                    server = cfg.get_server()
+                    print(f"New issue created: {server.get('url')}/browse/{new_issue}")
                 else:
                     print('Sprint \"' + issue['Sprint'] + '\" not found in project ' + issue['Project'])
     else:
