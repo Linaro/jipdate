@@ -107,8 +107,6 @@ change this to another state, then simply uncomment the line and write another
 state for it, i.e., change like we've done at line 4 here.
 
 .. code-block:: bash
-    :linenos:
-    :emphasize-lines: 4
 
     [SWG-368]
     # Header: Demo / Test issue three
