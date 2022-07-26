@@ -78,6 +78,7 @@ jira_field_to_yaml = {
         'description' : 'Description',
         'assignee' : 'AssigneeEmail',
         'customfield_10014' : 'EpicLink',
+        'customfield_10104' : 'ClientStakeholder',
         'timetracking' : 'OriginalEstimate',
         'components' : 'Components',
         'customfield_10020' : 'Sprint',
@@ -146,6 +147,12 @@ def main():
 
                 if 'EpicLink' in issue.keys():
                     fields['customfield_10014'] = issue['EpicLink']
+
+                if 'ClientStakeholder' in issue.keys():
+                    csh_fields_dict = issue_meta_data['projects'][0]['issuetypes'][0]['fields']['customfield_10104']['allowedValues']
+                    for s in csh_fields_dict:
+                        if s['value'] == issue['ClientStakeholder']:
+                            fields['customfield_10104'] = [{'self':s['self'], 'value': s['value'], 'id': str(s['id'])}]
 
                 if 'Components' in issue.keys():
                     components = jira.project_components(issue['Project'])
