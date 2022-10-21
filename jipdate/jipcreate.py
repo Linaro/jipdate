@@ -156,9 +156,13 @@ def main():
 
                 if 'Components' in issue.keys():
                     components = jira.project_components(issue['Project'])
+                    comparr = []
                     for c in components:
-                        if c.name == issue['Components']:
-                            fields['components'] = [{'id': str(c.id)}]
+                        for comp in issue['Components'].split(','):
+                            if c.name == comp.strip():
+                                comparr.append({'id': str(c.id)})
+                    if len(comparr) > 0:
+                        fields['components'] = comparr
 
                 sprint_found = True  # Only indicate sprint not found in case a sprint has been specified.
                 if 'Sprint' in issue.keys():
