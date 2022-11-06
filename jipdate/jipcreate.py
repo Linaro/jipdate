@@ -82,6 +82,8 @@ jira_field_to_yaml = {
         'timetracking' : 'OriginalEstimate',
         'components' : 'Components',
         'customfield_10020' : 'Sprint',
+        'duedate' : 'Due date',
+        'customfield_10011' : 'Epic Name',
         }
 
 ################################################################################
@@ -178,6 +180,12 @@ def main():
                             if sprint.name == issue['Sprint']:
                                 fields['customfield_10020'] = sprint.id
                                 sprint_found = True
+
+                if 'Due date' in issue.keys():
+                    fields['duedate'] = str(issue['Due date'])
+
+                if 'Epic Name' in issue.keys():
+                    fields['customfield_10011'] = issue['Epic Name']
 
                 if sprint_found:
                     # Check if all feilds are possible to set in this issuetype and project.

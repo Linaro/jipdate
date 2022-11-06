@@ -26,7 +26,7 @@ I want to create a story
 
     $ jipcreate -f /path/to/file.yaml
 
-Fields that can be found in the yaml file are the following.
+Fields that can be found in the yaml file are the following for a 'Story' or 'Ticket'.
 This is an example yaml file.
 
 .. code-block:: bash
@@ -41,7 +41,22 @@ This is an example yaml file.
       Sprint: sprint name
 
 
-Required fields in the yaml file are: IssueType, Project and Summary.
+Fields that can be found in the yaml file are the following for a 'Epic'.
+This is an example yaml file.
+
+.. code-block:: bash
+
+    - IssueType: Epic
+      Project: LKQ
+      Summary: Testing Epic shared visibility
+      Epic Name: Different Testing Epic shared visibility
+      Description: |-
+        Some text can be written here.
+      AssigneeEmail: firstname.surname@linaro.org
+      Due date: 2023-06-31
+
+
+NOTE: Required fields depends on what is configured in your JIRA instance.
 
 Testing / development
 =====================
