@@ -84,6 +84,7 @@ jira_field_to_yaml = {
         'customfield_10020' : 'Sprint',
         'duedate' : 'Due date',
         'customfield_10011' : 'Epic Name',
+        'customfield_10034' : 'Share Visibility',
         }
 
 ################################################################################
@@ -186,6 +187,17 @@ def main():
 
                 if 'Epic Name' in issue.keys():
                     fields['customfield_10011'] = issue['Epic Name']
+
+                if 'Share Visibility' in issue.keys():
+                    share_visibility = []
+                    for shared_with in issue['Share Visibility']:
+                        tmp_share = jira.search_assignable_users_for_issues(query=shared_with, project=issue['Project'])[0]
+                        share_visibility.append({'id': tmp_share.accountId})
+                    log.debug(f"shared with: {issue['Share Visibility']}")
+                    log.debug(f"share_visibility: {share_visibility}")
+                    # We assume that the first entry in the returned user array is the one we want
+                    if len(share_visibility) > 0:
+                        fields['customfield_10034'] = share_visibility
 
                 if sprint_found:
                     # Check if all feilds are possible to set in this issuetype and project.

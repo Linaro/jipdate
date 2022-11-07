@@ -38,6 +38,7 @@ This is an example yaml file.
         Some text can be written here.
       AssigneeEmail: firstname.surname@linaro.org
       OriginalEstimate: 5h|5d|5w
+      Share Visibility: [donald.duck@linaro.org,micky.mouse@linaro.org]
       Sprint: sprint name
 
 
@@ -53,6 +54,7 @@ This is an example yaml file.
       Description: |-
         Some text can be written here.
       AssigneeEmail: firstname.surname@linaro.org
+      Share Visibility: [donald.duck@linaro.org,micky.mouse@linaro.org]
       Due date: 2023-06-31
 
 
