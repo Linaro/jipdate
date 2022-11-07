@@ -185,8 +185,11 @@ def main():
                 if 'Due date' in issue.keys():
                     fields['duedate'] = str(issue['Due date'])
 
-                if 'Epic Name' in issue.keys():
-                    fields['customfield_10011'] = issue['Epic Name']
+                if 'IssueType' in issue.keys() and issue['IssueType'] == 'Epic':
+                    if 'Epic Name' in issue.keys():
+                        fields['customfield_10011'] = issue['Epic Name']
+                    else:
+                        fields['customfield_10011'] = issue['Summary']
 
                 if 'Share Visibility' in issue.keys():
                     share_visibility = []
