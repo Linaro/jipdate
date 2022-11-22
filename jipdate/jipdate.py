@@ -374,7 +374,7 @@ def parse_status_file(jira, filename, issues):
         if transition != "" and transition != str(issue.fields.status):
             # An optional 'resolution' attribute can be set when doing a transition
             # to Resolved, using the following pattern: Resolved / <resolution>
-            if transition.startswith('Resolved') and '/' in transition:
+            if (transition.startswith('Resolved') or transition.startswith('Closed')) and '/' in transition:
                 (transition, resolution) = map(str.strip, transition.split('/'))
                 if not resolution in resolution_map:
                     print("Invalid resolution \"{}\" for issue {}".format(resolution, issue))
