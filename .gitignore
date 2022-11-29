@@ -5,3 +5,4 @@ status.txt
 *.pyc
 *.mm
 docs/_build/*
+jipdate.py.old

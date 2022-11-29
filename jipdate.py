@@ -138,7 +138,7 @@ def get_parser():
 ################################################################################
 # Jira functions
 ################################################################################
-def update_jira(jira, i, c, t):
+def update_jira(jira, i, c, t, v):
     """
     This is the function that do the actual updates to Jira and in this case it
     is adding comments to a certain issue.
@@ -159,6 +159,13 @@ def update_jira(jira, i, c, t):
         log.debug("-- >8 --------------------------------------------------------------------------\n\n")
         jira.add_comment(i, c)
 
+    if v != "":
+        log.debug("Updating Jira issue: %s with fix version(s): %s" % (i, v))
+        issue = jira.issue(i)
+        ver = []
+        for fv in v:
+            ver.append({'name': fv}) 
+        issue.update(fields={'fixVersions': ver})
 
 def write_last_jira_comment(f, jira, issue):
     """ Pulls the last comment from Jira from an issue and writes it to the file
@@ -225,6 +232,7 @@ def get_jira_issues(jira, username):
     log.debug("Found issue:")
     for issue in my_issues:
         log.debug("%s : %s" % (issue, issue.fields.summary))
+        fix_versions = ', '.join([fv.name for fv in issue.fields.fixVersions])
 
         if (merge_issue_header()):
             f.write("[%s%s%s]\n" % (issue, get_header_separator(), issue.fields.summary))
@@ -234,6 +242,7 @@ def get_jira_issues(jira, username):
 
         f.write("# Type: %s\n" % issue.fields.issuetype)
         f.write("# Status: %s\n" % issue.fields.status)
+        f.write("# Fix Version: %s\n" % fix_versions)
         f.write(get_extra_comments())
         if last_comment:
             write_last_jira_comment(f, jira, issue)
@@ -283,6 +292,10 @@ def parse_status_file(jira, filename, issues):
     # match:
     regex_status = r'(?:^Status:) *(.+)\n$'
 
+    # Regexp to match for a fix version update, this will remove 'Fix Version' from the
+    # match:
+    regex_fix = r'(?:^Fix Version:) *(.+)\n$'
+    
     # Contains the status text, it could be a file or a status email
     status = ""
 
@@ -304,7 +317,9 @@ def parse_status_file(jira, filename, issues):
         # Evaluate and save the transition regex for later. We have to do this
         # here, since we cannot assign and save the variable in the if
         # construction as you can do in C for example.
+        # Also, the fix version regex.
         transition = re.search(regex_status, line)
+        new_fixes = re.search(regex_fix, line)
 
         if match:
             myissue = match.group(1)
@@ -314,14 +329,14 @@ def parse_status_file(jira, filename, issues):
             # let's try to find the issue there first, otherwise ask Jira
             try:
                 issue = [x for x in issues if str(x) == myissue][0]
-                issue_comments.append((issue, "", ""))
+                issue_comments.append((issue, "", "", ""))
 
             # IndexError: we had fetched already, but issue is not found
             # TypeError: issues is None, we haven't queried Jira yet, at all
             except (IndexError, TypeError) as e:
                 try:
                     issue = jira.issue(myissue)
-                    issue_comments.append((issue, "", ""))
+                    issue_comments.append((issue, "", "", ""))
                 except  Exception as e:
                     if 'Issue Does Not Exist' in e.text:
                         print('[{}] :  {}'.format(myissue, e.text))
@@ -341,25 +356,30 @@ def parse_status_file(jira, filename, issues):
             # means that it doesn't matter if the user enter all lower case,
             # mixed or all upper case. All of them will work.
             new_status = transition.groups()[0].title()
-            (i,c,_) = issue_comments[-1]
-            issue_comments[-1] = (i, c, new_status)
+            (i,c,t,v) = issue_comments[-1]
+            issue_comments[-1] = (i, c, new_status, '')
+        elif new_fixes and validissue:
+            new_fix_v = new_fixes.groups()[0].title()
+            (i,c,t,_) = issue_comments[-1]
+            issue_comments[-1] = (i, c, t, new_fix_v)
         else:
             # Don't add lines with comments
             if (line[0] != "#" and issue_comments and validissue):
-                (i,c,t) = issue_comments[-1]
-                issue_comments[-1] = (i, c + line, t)
+                (i,c,t,v) = issue_comments[-1]
+                issue_comments[-1] = (i, c + line, t, v)
 
     issue_upload = []
     print("These JIRA cards will be updated as follows:\n")
+
     for (idx,t) in enumerate(issue_comments):
-        (issue,comment,transition) = issue_comments[idx]
+        (issue,comment,transition,version) = issue_comments[idx]
 
         # Strip beginning  and trailing blank lines
         comment = comment.strip('\n')
 
         # initialize here to avoid unassigned variables and useless code complexity
         resolution_id = transition_id = None
-        resolution = transition_summary = ""
+        resolution = transition_summary = version_summary = ""
 
         if transition != "" and transition != str(issue.fields.status):
             # An optional 'resolution' attribute can be set when doing a transition
@@ -383,14 +403,26 @@ def parse_status_file(jira, filename, issues):
                 transition_summary = " %s => %s (%s)" % (issue.fields.status, transition, resolution)
             else:
                 transition_summary = " %s => %s" % (issue.fields.status, transition)
-
-        if comment == "" and not transition_id:
+       
+        if version:
+            versions_list = []
+            versions = [s.strip() for s in version.split(",")]
+            for fv in jira.project_versions(issue.fields.project.key):
+                versions_list.append(fv.name)
+            if not all(item in versions_list for item in versions):
+                print("Invalid fix version(s) \"{}\" for issue {}".format(versions, issue))
+                print("Possible fix versions: {}".format(versions_list))
+                sys.exit(1)
+            old_version = ', '.join([fv.name for fv in issue.fields.fixVersions])
+            version_summary = "\n %s => %s" % (old_version, versions)
+        
+        if comment == "" and not transition_id and not version:
             log.debug("Issue [%s] has no comment or transitions, not updating the issue" % (issue))
             continue
 
         issue_upload.append((issue, comment,
-                             {'transition': transition_id, 'resolution': resolution_id}))
-        print("[%s]%s\n  %s" % (issue, transition_summary, "\n  ".join(comment.splitlines())))
+                             {'transition': transition_id, 'resolution': resolution_id}, versions))
+        print("[%s] Status: %s Fix Versions: %s  %s" % (issue, transition_summary, version_summary, "\n ".join(comment.splitlines())))
     print("")
 
     issue_comments = issue_upload
@@ -404,8 +436,8 @@ def parse_status_file(jira, filename, issues):
         sys.exit()
 
     # if we found something, let's update jira
-    for (issue,comment,transition) in issue_comments:
-        update_jira(jira, issue, comment, transition)
+    for (issue,comment,transition,versions) in issue_comments:
+        update_jira(jira, issue, comment, transition, versions)
 
     print("Successfully updated your Jira tickets!\n")
     if not cfg.args.s:
