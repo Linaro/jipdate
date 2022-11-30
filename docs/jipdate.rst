@@ -99,6 +99,7 @@ parameters to Jipdate). It could look like this:
     # Header: Demo / Test issue three
     # Type: Epic
     # Status: Open
+    # Fix Version: Kernel 6.2
     # No updates since last week.
     ...
 
@@ -114,6 +115,7 @@ state for it, i.e., change like we've done at line 4 here.
     # Header: Demo / Test issue three
     # Type: Epic
     Status: To do
+    # Fix Version: Kernel 6.2
     # No updates since last week.
 
 .. note::
@@ -122,6 +124,11 @@ state for it, i.e., change like we've done at line 4 here.
     before or after matter. But it needs to be written as in Jira otherwise. If
     you get it wrong, Jipdate will return an error and also show the possible
     combinations. Example. ``todo`` is wrong, but ``to do`` is correct!
+
+    Similarly, Fix Version can be updated by uncommenting the line and entering
+    the new value or values. Multiple Fix Versions are supported, with each value
+    being separated by a comma (i.e. ``Kernel 6.2, Kernel 6.3``). Upper/lower case
+    DO matter for Fix Version changes but spaces before or after do not. 
 
 Updates with status reports
 ===========================
