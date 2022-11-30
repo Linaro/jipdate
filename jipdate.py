@@ -414,7 +414,7 @@ def parse_status_file(jira, filename, issues):
                 print("Possible fix versions: {}".format(versions_list))
                 sys.exit(1)
             old_version = ', '.join([fv.name for fv in issue.fields.fixVersions])
-            version_summary = "\n %s => %s" % (old_version, versions)
+            version_summary = "%s => %s" % (old_version, versions)
         
         if comment == "" and not transition_id and not version:
             log.debug("Issue [%s] has no comment or transitions, not updating the issue" % (issue))
@@ -422,7 +422,7 @@ def parse_status_file(jira, filename, issues):
 
         issue_upload.append((issue, comment,
                              {'transition': transition_id, 'resolution': resolution_id}, versions))
-        print("[%s] Status: %s Fix Versions: %s  %s" % (issue, transition_summary, version_summary, "\n ".join(comment.splitlines())))
+        print("[%s]\n Status: %s\n Fix Versions: %s\n  %s" % (issue, transition_summary, version_summary, "\n ".join(comment.splitlines())))
     print("")
 
     issue_comments = issue_upload
