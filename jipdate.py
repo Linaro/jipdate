@@ -422,7 +422,7 @@ def parse_status_file(jira, filename, issues):
 
         issue_upload.append((issue, comment,
                              {'transition': transition_id, 'resolution': resolution_id}, versions))
-        print("[%s]\n Status: %s\n Fix Versions: %s\n  %s" % (issue, transition_summary, version_summary, "\n ".join(comment.splitlines())))
+        print("[%s]\n Status: %s\n Fix Versions: %s\n %s" % (issue, transition_summary, version_summary, "\n ".join(comment.splitlines())))
     print("")
 
     issue_comments = issue_upload
