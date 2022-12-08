@@ -93,6 +93,7 @@ jira_field_to_yaml = {
 def main():
     argv = sys.argv
     parser = get_parser()
+    created_cards = {}
 
     # The parser arguments (cfg.args) are accessible everywhere after this call.
     cfg.args = parser.parse_args()
@@ -149,7 +150,10 @@ def main():
                         fields['assignee'] = {'id': assignee[0].accountId}
 
                 if 'EpicLink' in issue.keys():
-                    fields['customfield_10014'] = issue['EpicLink']
+                    if issue['EpicLink'] in created_cards.keys():
+                        fields['customfield_10014'] = created_cards[issue['EpicLink']]
+                    else:
+                        fields['customfield_10014'] = issue['EpicLink']
 
                 if 'ClientStakeholder' in issue.keys():
                     csh_fields_dict = issue_meta_data['projects'][0]['issuetypes'][0]['fields']['customfield_10104']['allowedValues']
@@ -218,11 +222,13 @@ def main():
 
                     if cfg.args.dry_run:
                         print(f"This issue would have been created when running without '--dry-run':")
+                        created_cards [ issue['Summary'] ] = f"new_issue, {issue['Summary']}"
                         for field in fields.keys():
                             print(f"{field}: {fields[field]}")
                     else:
                         server = cfg.get_server()
                         new_issue = jira.create_issue(fields=fields)
+                        created_cards [ issue['Summary'] ] = str(new_issue)
                         print(f"New issue created: {server.get('url')}/browse/{new_issue}")
                 else:
                     print('Sprint \"' + issue['Sprint'] + '\" not found in project ' + issue['Project'])
