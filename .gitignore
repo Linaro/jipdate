@@ -1,0 +1,8 @@
+config.yml
+.jipdate.yml
+status.txt
+*.swp
+*.pyc
+*.mm
+docs/_build/*
+jipdate.py.old
