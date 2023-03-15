@@ -30,7 +30,6 @@ def add_domain(user):
     return user
 
 def default_jql():
-    user = cfg.args.user
     project = cfg.args.project
     team = cfg.args.team
 
@@ -41,7 +40,11 @@ def default_jql():
     elif project:
         jql = "project =  '%s' " % project
     else:
-        jql = "assignee = '%s' " % add_domain(user)
+        # cfg.args.user is a list with 1 or more users
+        # we construct the query as:
+        # (assignee = 'user1' or assignee = 'user2' )
+        users = list(map(add_domain, cfg.args.user))
+        jql = '(' + ' or '.join(map(lambda str: 'assignee = \'' + str + '\'' , users)) + ')'
 
     return jql
 
@@ -134,7 +137,7 @@ def get_parser():
             default=False, \
             help='Use the test server')
 
-    parser.add_argument('-u', '--user', required=False, action="store", \
+    parser.add_argument('-u', '--user', required=False, action="append", \
             default=None, \
             help='Query Jira with another Jira username \
             (first.last or first.last@linaro.org)')
@@ -261,7 +264,7 @@ def main(argv):
     jira, username = jiralogin.get_jira_instance(cfg.args.test)
 
     if cfg.args.user is None:
-        cfg.args.user = username
+        cfg.args.user = [username]
 
     updates = list(enumerate_updates(jira))
     pendings = list(enumerate_pending(jira))
