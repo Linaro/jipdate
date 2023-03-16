@@ -39,12 +39,14 @@ version: 1
 
 # Jira server information
 #server:
-#  url: https://linaro.atlassian.net
-#  token: abcdefghijkl
+#  url: https://issues.redhat.com
+#  token: abcdefghijkl  # Jira Cloud Token
+#  token_auth: abcdefghijkl # Jira Personal Access Token
 
 #test_server:
 #  url: https://<name_of_test_instance>.atlassian.net
-#  token: abcdefghijkl
+#  token: abcdefghijkl  # Jira Cloud Token
+#  token_auth: abcdefghijkl # Jira Personal Access Token
 
 # Extra comments added to each Jira issue (multiline is OK)
 comments:
