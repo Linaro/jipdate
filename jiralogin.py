@@ -98,14 +98,18 @@ def get_jira_instance(use_test_server):
     server = cfg.get_server(use_test_server)
     url = server.get('url')
     token = server.get('token')
+    token_auth = server.get('token_auth')
 
     # password based authentication
-    if not token:
+    if not (token or token_auth):
         password = get_password()
 
     try:
-        if token:
-            log.debug("Accessing %s with %s using token based authentication" % (url, username))
+        if token_auth:
+            log.debug("Accessing %s with %s using personal access token authentication" % (url, username))
+            j = JIRA(url, token_auth=(token_auth)), username
+        elif token:
+            log.debug("Accessing %s with %s using cloud token authentication" % (url, username))
             j = JIRA(url, basic_auth=(username, token)), username
         else:
             log.debug("Accessing %s with %s using password based authentication" % (url, username))
