@@ -153,7 +153,7 @@ def search_issues(jira, jql):
     max_results = 50
 
     while result['startAt'] < result['total']:
-        result = jira.search_issues(jql, startAt = result['startAt'], maxResults=max_results, fields=['summary', 'created', 'status', 'issuetype', 'assignee'], json_result=True)
+        result = jira.search_issues(jql, startAt = result['startAt'], maxResults=max_results, fields=['summary', 'created', 'status', 'issuetype', 'assignee', 'timetracking'], json_result=True)
         issues += result['issues']
         result['startAt'] += max_results
 
@@ -174,7 +174,11 @@ def print_issues(jira, issues):
         if cfg.args.comments:
             c = jira.comments(issue['key'])
             if len(c) > 0:
-                print(f"# Assignee: {issue['fields']['assignee']['displayName']}")
+                try:
+                    timespent = issue['fields']['timetracking']['timeSpent']
+                except KeyError:
+                    timespent = 0
+                print(f"# Assignee: {issue['fields']['assignee']['displayName']}, Original Estimate: {issue['fields']['timetracking']['originalEstimate']}, Time Spent: {timespent}")
                 print(f"# Last comment, updated: {c[0].updated}, by: {c[0].author}")
                 comment = "# ---8<---\n# %s\n# --->8---\n" % \
                           "\n# ".join(c[-1].body.splitlines())
