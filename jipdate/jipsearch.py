@@ -42,6 +42,10 @@ def get_parser():
             help='''Search for issues with the specified assignees.
             Use comma to separate multiple reporters.''')
 
+    parser.add_argument('-e', '--epic', required=False, action="store",
+            default=None,
+            help='''Epic with children, specify epic to view with children.''')
+
     parser.add_argument('-ca', '--created-after', required=False, action="store",
             default=None,
             help='''Search for issues created after this date and time.
@@ -118,6 +122,9 @@ def create_jql(jira, initial_jql):
             for ai in assignee_ids:
                 account_ids.append(ai.accountId)
             jql_parts.append('assignee in (%s)' % ','.join(account_ids))
+
+    if cfg.args.epic:
+        jql_parts.append('(key = %s or parentepic = %s)' % (cfg.args.epic, cfg.args.epic))
 
     if cfg.args.created_after:
         jql_parts.append('created >= %s' % cfg.args.created_after)
