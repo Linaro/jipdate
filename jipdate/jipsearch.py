@@ -70,6 +70,10 @@ def get_parser():
             Valid formats include: "yyyy/MM/dd HH:mm", "yyyy-MM-dd HH:mm",
             "yyyy/MM/dd", "yyyy-MM-dd", or a period format e.g. "-5d", "4w 2d".''')
 
+    parser.add_argument('-c', '--comments', required=False, action="store_true",
+            default=False,
+            help='''View latest comments.''')
+
     parser.add_argument('-v', required=False, action="store_true",
             default=False,
             help='''Output some verbose debugging info''')
@@ -149,7 +153,7 @@ def search_issues(jira, jql):
     max_results = 50
 
     while result['startAt'] < result['total']:
-        result = jira.search_issues(jql, startAt = result['startAt'], maxResults=max_results, fields=['summary', 'created', 'status'], json_result=True)
+        result = jira.search_issues(jql, startAt = result['startAt'], maxResults=max_results, fields=['summary', 'created', 'status', 'issuetype', 'assignee'], json_result=True)
         issues += result['issues']
         result['startAt'] += max_results
 
@@ -164,9 +168,18 @@ def call_jqls(jira, jql):
     return issues
 
 
-def print_issues(issues):
+def print_issues(jira, issues):
     for issue in issues:
-        print(f"https://linaro.atlassian.net/browse/{issue['key']} ,  Summary: {issue['fields']['summary'].strip()} , Created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]} , Status: {issue['fields']['status']['statusCategory']['name']}")
+        print(f"https://linaro.atlassian.net/browse/{issue['key']} , Type: {issue['fields']['issuetype']['name'].strip()},  Summary: {issue['fields']['summary'].strip()} , Created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]} , Status: {issue['fields']['status']['statusCategory']['name']}")
+        if cfg.args.comments:
+            c = jira.comments(issue['key'])
+            if len(c) > 0:
+                print(f"Assignee: {issue['fields']['assignee']['displayName']}")
+                print(f"Last updated: {c[0].updated}, by: {c[0].author}")
+                comment = "# Last comment:\n# ---8<---\n# %s\n# --->8---\n" % \
+                          "\n# ".join(c[-1].body.splitlines())
+                print(comment)
+
         #print(f"{issue['key']}, status: {issue['fields']['status']['statusCategory']['name']}, created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]}\n\t   Summary: {issue['fields']['summary']}\n\t   https://linaro.atlassian.net/browse/{issue['key']}")
 
 ################################################################################
@@ -197,7 +210,7 @@ def main():
     else:
         issues = call_jqls(jira, [""])
 
-    print_issues(issues)
+    print_issues(jira, issues)
 
 if __name__ == "__main__":
     main()
