@@ -12,6 +12,7 @@ dependencies = [
     "jinja2",
     "jira",
     "PyYAML",
+    "python-dateutil",
 ]
 dynamic = ["version", "description"]
 
