@@ -70,6 +70,10 @@ def get_parser():
             Valid formats include: "yyyy/MM/dd HH:mm", "yyyy-MM-dd HH:mm",
             "yyyy/MM/dd", "yyyy-MM-dd", or a period format e.g. "-5d", "4w 2d".''')
 
+    parser.add_argument('-d', '--description', required=False, action="store_true",
+            default=False,
+            help='''View description.''')
+
     parser.add_argument('-c', '--comments', required=False, action="store_true",
             default=False,
             help='''View latest comments.''')
@@ -153,7 +157,7 @@ def search_issues(jira, jql):
     max_results = 50
 
     while result['startAt'] < result['total']:
-        result = jira.search_issues(jql, startAt = result['startAt'], maxResults=max_results, fields=['summary', 'created', 'status', 'issuetype', 'assignee', 'timetracking'], json_result=True)
+        result = jira.search_issues(jql, startAt = result['startAt'], maxResults=max_results, fields=['summary', 'description', 'created', 'status', 'issuetype', 'assignee', 'timetracking'], json_result=True)
         issues += result['issues']
         result['startAt'] += max_results
 
@@ -171,6 +175,13 @@ def call_jqls(jira, jql):
 def print_issues(jira, issues):
     for issue in issues:
         print(f"https://linaro.atlassian.net/browse/{issue['key']} , Type: {issue['fields']['issuetype']['name'].strip()},  Summary: {issue['fields']['summary'].strip()} , Created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]} , Status: {issue['fields']['status']['statusCategory']['name']}")
+        if cfg.args.description:
+            print(f"# Description:")
+            descriptions = issue['fields']['description']
+            for line in descriptions.split('\n'):
+                print(f"#   {line}")
+            print(f"#\n")
+
         if cfg.args.comments:
             c = jira.comments(issue['key'])
             if len(c) > 0:
