@@ -23,13 +23,13 @@ week.
 
 .. code-block:: bash
 
-    $ ./jipstatus.py
+    $ jipstatus
 
 The `--days` argument can be used to query for any arbitrary duration (in days):
 
 .. code-block:: bash
 
-    $ ./jipstatus.py --days 30
+    $ jipstatus --days 30
 
 I want to generate an HTML output
 ---------------------------------
@@ -40,7 +40,7 @@ the user:
 
 .. code-block:: bash
 
-    $ ./jipstatus.py --html [file.html]
+    $ jipstatus --html [file.html]
 
 Retrieve updates for a specific Jira project
 ============================================
@@ -50,13 +50,13 @@ updates to all tickets from a specific project.
 
 .. code-block:: bash
 
-    $ ./jipstatus.py --project <PJT_KEY>
+    $ jipstatus --project <PJT_KEY>
 
 Several arguments can be combined together:
 
 .. code-block:: bash
 
-    $ ./jipstatus.py --project <PJT_KEY> --days 30 --html
+    $ jipstatus --project <PJT_KEY> --days 30 --html
 
 Retrieve updates for a specific Jira team
 =========================================
@@ -66,7 +66,7 @@ to a specific Jira team (or group):
 
 .. code-block:: bash
 
-    $ ./jipstatus.py --team linaro --days 30 --html
+    $ jipstatus --team linaro --days 30 --html
 
 
 Retrieve updates for a specific Jira user
@@ -77,7 +77,7 @@ can be the user email address, or the short form firstname.lastname.
 
 .. code-block:: bash
 
-    $ ./jipstatus.py --user jane.doe --days 30 --html
+    $ jipstatus --user jane.doe --days 30 --html
 
 
 I want to see more debugging text from Jipstatus
@@ -87,4 +87,4 @@ You can use `-v` to request verbose output.
 
 .. code-block:: bash
 
-    $ ./jipstatus.py -v
+    $ jipstatus -v

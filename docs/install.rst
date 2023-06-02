@@ -27,18 +27,26 @@ working as supposed to when starting out from scratch.
     for example). The important message is that you **only** use Jipdate with
     Python3!
 
+Install jipdate with pip
+=============================
+.. code-block:: bash
+    :linenos:
+    :emphasize-lines: 3, 6
+
+    $ pip3 install --user jipdate
+
 Ubuntu / Debian based systems
 =============================
 .. code-block:: bash
     :linenos:
     :emphasize-lines: 3, 6
 
-    $ sudo apt update 
-    $ sudo apt upgrade
     $ sudo apt install python3-pip git
     $ git clone https://github.com/Linaro/jipdate.git
     $ cd jipdate
-    $ pip3 install --user -r requirements.txt 
+    $ pip3 install --user flit
+    $ flit build
+    $ flit install --symlink
 
 Fedora / Red Hat based systems
 ==============================
@@ -49,7 +57,9 @@ Fedora / Red Hat based systems
     $ sudo dnf -y install python3-pyyaml python3-jira
     $ git clone https://github.com/Linaro/jipdate.git
     $ cd jipdate
-    $ pip3 install --user -r requirements.txt
+    $ pip3 install --user flit
+    $ flit build
+    $ flit install --symlink
 
 Arch Linux
 ==========
@@ -61,8 +71,10 @@ Arch Linux
     $ sudo pacman -S extra/git extra/python extra/python-pip
     $ git clone https://github.com/Linaro/jipdate.git
     $ cd jipdate
-    $ pip3 install --user -r requirements.txt 
-    
+    $ pip3 install --user flit
+    $ flit build
+    $ flit install --symlink
+
 Mac OS (v12 Monterey or later)
 ==============================
 .. code-block:: bash
@@ -73,4 +85,6 @@ Mac OS (v12 Monterey or later)
     $ brew install python git
     $ git clone https://github.com/Linaro/jipdate.git
     $ cd jipdate
-    $ pip3 install --user -r requirements.txt
+    $ pip3 install --user flit
+    $ flit build
+    $ flit install --symlink

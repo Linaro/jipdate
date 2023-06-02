@@ -7,7 +7,7 @@ The most straight forward way is to simply run the script
 
 .. code-block:: bash
 
-    $ ./jipdate
+    $ jipdate
 
 Running it without any parameters (or with ``-h``) will give you a list of all
 parameters. If you want to see examples of how to combine flags/parameters, then
@@ -20,7 +20,7 @@ The most straight forward way is to simply run the script
 
 .. code-block:: bash
 
-    $ ./jipstatus
+    $ jipstatus
 
 Running it without any parameters will show all tickets updates for the current
 user in the last 7 days, including newly created tickets, state transitions, and

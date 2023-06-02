@@ -1,3 +1,0 @@
-jira
-pyyaml
-Jinja2

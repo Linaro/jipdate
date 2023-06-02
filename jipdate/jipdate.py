@@ -12,17 +12,18 @@ import tempfile
 import yaml
 
 # Local files
-import cfg
-import jiralogin
+from jipdate import cfg
+from jipdate import jiralogin
+
 
 ################################################################################
 # Helper functions
 ################################################################################
 def print_status(status):
-    """ Helper function printing your status """
+    """Helper function printing your status"""
     print("This is your status:")
     print("\n---\n")
-    print("\n".join(l.strip('\n') for l in status))
+    print("\n".join(l.strip("\n") for l in status))
 
 
 def open_editor(filename):
@@ -31,9 +32,9 @@ def open_editor(filename):
     opens the status file in the editor.
     """
     if "EDITOR" in os.environ:
-        editor = os.environ['EDITOR']
+        editor = os.environ["EDITOR"]
     elif "VISUAL" in os.environ:
-        editor = os.environ['VISUAL']
+        editor = os.environ["VISUAL"]
     elif os.path.exists("/usr/bin/editor"):
         editor = "/usr/bin/editor"
     elif os.path.exists("/usr/bin/vim"):
@@ -56,7 +57,7 @@ def open_file(filename):
     if filename:
         return open(filename, "w")
     else:
-        return tempfile.NamedTemporaryFile(mode='w+t', delete=False)
+        return tempfile.NamedTemporaryFile(mode="w+t", delete=False)
 
 
 def add_domain(user):
@@ -64,111 +65,176 @@ def add_domain(user):
     Helper function that appends @linaro.org to the username. It does nothing if
     it is already included.
     """
-    if '@' not in user:
+    if "@" not in user:
         user = user + "@linaro.org"
     return user
 
 
 def email_to_name(email):
-    """ Converts 'first.last@linaro.org' to 'First Last'. """
+    """Converts 'first.last@linaro.org' to 'First Last'."""
     n = email.split("@")[0].title()
     return n.replace(".", " ")
+
 
 ################################################################################
 # Argument parser
 ################################################################################
 def get_parser():
-    """ Takes care of script argument parsing. """
-    parser = ArgumentParser(description='Script used to update comments in Jira')
+    """Takes care of script argument parsing."""
+    parser = ArgumentParser(description="Script used to update comments in Jira")
 
-    parser.add_argument('-e', required=False, action="store_true", \
-            default=False, \
-            help='Only include epics (no initiatives or stories). Used in combination \
-            with "-q"')
+    parser.add_argument(
+        "-e",
+        required=False,
+        action="store_true",
+        default=False,
+        help='Only include epics (no initiatives or stories). Used in combination \
+            with "-q"',
+    )
 
-    parser.add_argument('-f', '--file', required=False, action="store", \
-            default=None, \
-            help='Load status update from FILE.  NOTE: -q will overwrite the \
-            content of FILE')
+    parser.add_argument(
+        "-f",
+        "--file",
+        required=False,
+        action="store",
+        default=None,
+        help="Load status update from FILE.  NOTE: -q will overwrite the \
+            content of FILE",
+    )
 
-    parser.add_argument('-l', required=False, action="store_true", \
-            default=False, \
-            help='Get the last comment from Jira')
+    parser.add_argument(
+        "-l",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Get the last comment from Jira",
+    )
 
-    parser.add_argument('-p', required=False, action="store_true", \
-            default=False, \
-            help='Print Jira query result to stdout (no editor or jira updates)')
+    parser.add_argument(
+        "-p",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Print Jira query result to stdout (no editor or jira updates)",
+    )
 
-    parser.add_argument('-q', required=False, action="store_true", \
-            default=False, \
-            help='Query Jira for issue(s) assigned to you')
+    parser.add_argument(
+        "-q",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Query Jira for issue(s) assigned to you",
+    )
 
-    parser.add_argument('-s', required=False, action="store_true", \
-            default=False, \
-            help='Be silent, only show jira updates and not entire status file')
+    parser.add_argument(
+        "-s",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Be silent, only show jira updates and not entire status file",
+    )
 
-    parser.add_argument('-t', required=False, action="store_true", \
-            default=False, \
-            help='Use the test server')
+    parser.add_argument(
+        "-t",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Use the test server",
+    )
 
-    parser.add_argument('-u', '--user', required=False, action="store", \
-            default=None, \
-            help='Query Jira with another Jira username \
-            (first.last or first.last@linaro.org)')
+    parser.add_argument(
+        "-u",
+        "--user",
+        required=False,
+        action="store",
+        default=None,
+        help="Query Jira with another Jira username \
+            (first.last or first.last@linaro.org)",
+    )
 
-    parser.add_argument('-v', required=False, action="store_true", \
-            default=False, \
-            help='Output some verbose debugging info')
+    parser.add_argument(
+        "-v",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Output some verbose debugging info",
+    )
 
-    parser.add_argument('-x', required=False, action="store_true", \
-            default=False, \
-            help='EXCLUDE stories and sub-tasks from gathered Jira issues. Used in combination \
-            with "-q"')
+    parser.add_argument(
+        "-x",
+        required=False,
+        action="store_true",
+        default=False,
+        help='EXCLUDE stories and sub-tasks from gathered Jira issues. Used in combination \
+            with "-q"',
+    )
 
-    parser.add_argument('--all', required=False, action="store_true", \
-            default=False, \
-            help='Load all Jira issues, not just the once marked in progress.')
+    parser.add_argument(
+        "--all",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Load all Jira issues, not just the once marked in progress.",
+    )
 
-    parser.add_argument('--dry-run', required=False, action="store_true", \
-            default=False, \
-            help='Do not make any changes to JIRA')
+    parser.add_argument(
+        "--dry-run",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Do not make any changes to JIRA",
+    )
 
     return parser
+
 
 ################################################################################
 # Jira functions
 ################################################################################
-def update_jira(jira, i, c, t):
+def update_jira(jira, i, c, t, ts=None):
     """
     This is the function that do the actual updates to Jira and in this case it
     is adding comments to a certain issue.
     """
-    if t['transition']:
-        if t['resolution']:
-            log.debug("Updating Jira issue: %s with transition: %s (%s)" %
-                   (i, t['transition'], t['resolution']))
-            jira.transition_issue(i, t['transition'], fields={'resolution':{'id': t['resolution']}})
+    if t["transition"]:
+        if t["resolution"]:
+            log.debug(
+                "Updating Jira issue: %s with transition: %s (%s)"
+                % (i, t["transition"], t["resolution"])
+            )
+            jira.transition_issue(
+                i, t["transition"], fields={"resolution": {"id": t["resolution"]}}
+            )
         else:
-            log.debug("Updating Jira issue: %s with transition: %s" % (i, t['transition']))
-            jira.transition_issue(i, t['transition'])
+            log.debug(
+                "Updating Jira issue: %s with transition: %s" % (i, t["transition"])
+            )
+            jira.transition_issue(i, t["transition"])
 
     if c != "":
         log.debug("Updating Jira issue: %s with comment:" % i)
-        log.debug("-- 8< --------------------------------------------------------------------------")
+        log.debug(
+            "-- 8< --------------------------------------------------------------------------"
+        )
         log.debug("%s" % c)
-        log.debug("-- >8 --------------------------------------------------------------------------\n\n")
+        log.debug(
+            "-- >8 --------------------------------------------------------------------------\n\n"
+        )
         jira.add_comment(i, c)
+        if ts:
+            jira.add_worklog(i, timeSpent=ts, comment=c)
 
 
 def write_last_jira_comment(f, jira, issue):
-    """ Pulls the last comment from Jira from an issue and writes it to the file
+    """Pulls the last comment from Jira from an issue and writes it to the file
     object.
     """
     c = jira.comments(issue)
     if len(c) > 0:
         try:
-            comment = "# Last comment:\n# ---8<---\n# %s\n# --->8---\n" % \
-                        "\n# ".join(c[-1].body.splitlines())
+            comment = "# Last comment:\n# ---8<---\n# %s\n# --->8---\n" % "\n# ".join(
+                c[-1].body.splitlines()
+            )
             f.write(comment)
         except UnicodeEncodeError:
             log.debug("Can't encode character")
@@ -193,14 +259,14 @@ def get_jira_issues(jira, username):
             issue_types.extend(["Story", "Sub-task", "Bug"])
     issue_type = "issuetype in (%s)" % ", ".join(issue_types)
 
-    status = "status in (\"In Progress\")"
+    status = 'status in ("In Progress")'
     if all_status:
         status = "status not in (Resolved, Closed)"
 
     if user is None:
         user = "currentUser()"
     else:
-        user = "\"%s\"" % add_domain(user)
+        user = '"%s"' % add_domain(user)
 
     jql = "%s AND assignee = %s AND %s" % (issue_type, user, status)
     log.debug(jql)
@@ -226,8 +292,10 @@ def get_jira_issues(jira, username):
     for issue in my_issues:
         log.debug("%s : %s" % (issue, issue.fields.summary))
 
-        if (merge_issue_header()):
-            f.write("[%s%s%s]\n" % (issue, get_header_separator(), issue.fields.summary))
+        if merge_issue_header():
+            f.write(
+                "[%s%s%s]\n" % (issue, get_header_separator(), issue.fields.summary)
+            )
         else:
             f.write("[%s]\n" % issue)
             f.write("# Header: %s\n" % issue.fields.summary)
@@ -244,13 +312,19 @@ def get_jira_issues(jira, username):
 
 
 def should_update():
-    """ A yes or no dialogue. """
+    """A yes or no dialogue."""
     while True:
         server = cfg.get_server()
-        print("Server to update: %s\n" % server.get('url'));
-        answer = input("Are you sure you want to update Jira with the " +
-                           "information above? [y/n] ").lower().strip()
-        if answer in set(['y', 'n']):
+        print("Server to update: %s\n" % server.get("url"))
+        answer = (
+            input(
+                "Are you sure you want to update Jira with the "
+                + "information above? [y/n] "
+            )
+            .lower()
+            .strip()
+        )
+        if answer in set(["y", "n"]):
             return answer
         else:
             print("Incorrect input: %s" % answer)
@@ -281,10 +355,14 @@ def parse_status_file(jira, filename, issues):
 
     # Regexp to match for a status update, this will remove 'Status' from the
     # match:
-    regex_status = r'(?:^Status:) *(.+)\n$'
+    regex_status = r"(?:^Status:) *(.+)\n$"
 
     # Contains the status text, it could be a file or a status email
     status = ""
+
+    # Regexp to match for a time spent update, this will remove 'Time spent:'
+    # from the match:
+    regex_timespent = r"(^Time spent:) \d+\w\n$"
 
     # List of resolutions (when doing a transition to Resolved). Query once globally.
     resolution_map = dict([(t.name.title(), t.id) for t in jira.resolutions()])
@@ -292,8 +370,8 @@ def parse_status_file(jira, filename, issues):
     with open(filename) as f:
         status = f.readlines()
 
-    myissue = "";
-    mycomment = "";
+    myissue = ""
+    mycomment = ""
 
     # build list of {issue,comment} tuples found in status
     issue_comments = []
@@ -314,17 +392,17 @@ def parse_status_file(jira, filename, issues):
             # let's try to find the issue there first, otherwise ask Jira
             try:
                 issue = [x for x in issues if str(x) == myissue][0]
-                issue_comments.append((issue, "", ""))
+                issue_comments.append((issue, "", "", None))
 
             # IndexError: we had fetched already, but issue is not found
             # TypeError: issues is None, we haven't queried Jira yet, at all
             except (IndexError, TypeError) as e:
                 try:
                     issue = jira.issue(myissue)
-                    issue_comments.append((issue, "", ""))
-                except  Exception as e:
-                    if 'Issue Does Not Exist' in e.text:
-                        print('[{}] :  {}'.format(myissue, e.text))
+                    issue_comments.append((issue, "", "", None))
+                except Exception as e:
+                    if "Issue Does Not Exist" in e.text:
+                        print("[{}] :  {}".format(myissue, e.text))
                         validissue = False
 
         # Stop parsing entirely.  This needs to be placed before regex_stop
@@ -333,7 +411,7 @@ def parse_status_file(jira, filename, issues):
             break
         # If we have non-JIRA issue tags, stop parsing until we find a valid tag
         elif re.search(regex_stop, line):
-                validissue = False
+            validissue = False
         elif transition and validissue:
             # If we have a match, then the new status should be first in the
             # group. Jira always expect the name of the state transitions to be
@@ -341,21 +419,25 @@ def parse_status_file(jira, filename, issues):
             # means that it doesn't matter if the user enter all lower case,
             # mixed or all upper case. All of them will work.
             new_status = transition.groups()[0].title()
-            (i,c,_) = issue_comments[-1]
-            issue_comments[-1] = (i, c, new_status)
+            (i, c, _, ts) = issue_comments[-1]
+            issue_comments[-1] = (i, c, new_status, ts)
+        elif re.search(regex_timespent, line, re.IGNORECASE):
+            timespent = line.split(":")[1].strip()
+            (i, c, t, _) = issue_comments[-1]
+            issue_comments[-1] = (i, c, t, timespent)
         else:
             # Don't add lines with comments
-            if (line[0] != "#" and issue_comments and validissue):
-                (i,c,t) = issue_comments[-1]
-                issue_comments[-1] = (i, c + line, t)
+            if line[0] != "#" and issue_comments and validissue:
+                (i, c, t, ts) = issue_comments[-1]
+                issue_comments[-1] = (i, c + line, t, ts)
 
     issue_upload = []
     print("These JIRA cards will be updated as follows:\n")
-    for (idx,t) in enumerate(issue_comments):
-        (issue,comment,transition) = issue_comments[idx]
+    for idx, t in enumerate(issue_comments):
+        (issue, comment, transition, timespent) = issue_comments[idx]
 
         # Strip beginning  and trailing blank lines
-        comment = comment.strip('\n')
+        comment = comment.strip("\n")
 
         # initialize here to avoid unassigned variables and useless code complexity
         resolution_id = transition_id = None
@@ -364,33 +446,57 @@ def parse_status_file(jira, filename, issues):
         if transition != "" and transition != str(issue.fields.status):
             # An optional 'resolution' attribute can be set when doing a transition
             # to Resolved, using the following pattern: Resolved / <resolution>
-            if transition.startswith('Resolved') and '/' in transition:
-                (transition, resolution) = map(str.strip, transition.split('/'))
+            if (
+                transition.startswith("Resolved") or transition.startswith("Closed")
+            ) and "/" in transition:
+                (transition, resolution) = map(str.strip, transition.split("/"))
                 if not resolution in resolution_map:
-                    print("Invalid resolution \"{}\" for issue {}".format(resolution, issue))
+                    print(
+                        'Invalid resolution "{}" for issue {}'.format(resolution, issue)
+                    )
                     print("Possible resolution: {}".format([t for t in resolution_map]))
                     sys.exit(1)
                 resolution_id = resolution_map[resolution]
 
-            transition_map = dict([(t['name'].title(), t['id']) for t in jira.transitions(issue)])
+            transition_map = dict(
+                [(t["name"].title(), t["id"]) for t in jira.transitions(issue)]
+            )
             if not transition in transition_map:
-                print("Invalid transition \"{}\" for issue {}".format(transition, issue))
+                print('Invalid transition "{}" for issue {}'.format(transition, issue))
                 print("Possible transitions: {}".format([t for t in transition_map]))
                 sys.exit(1)
 
             transition_id = transition_map[transition]
             if resolution:
-                transition_summary = " %s => %s (%s)" % (issue.fields.status, transition, resolution)
+                transition_summary = " %s => %s (%s)" % (
+                    issue.fields.status,
+                    transition,
+                    resolution,
+                )
             else:
                 transition_summary = " %s => %s" % (issue.fields.status, transition)
 
         if comment == "" and not transition_id:
-            log.debug("Issue [%s] has no comment or transitions, not updating the issue" % (issue))
+            log.debug(
+                "Issue [%s] has no comment or transitions, not updating the issue"
+                % (issue)
+            )
             continue
 
-        issue_upload.append((issue, comment,
-                             {'transition': transition_id, 'resolution': resolution_id}))
-        print("[%s]%s\n  %s" % (issue, transition_summary, "\n  ".join(comment.splitlines())))
+        issue_upload.append(
+            (
+                issue,
+                comment,
+                {"transition": transition_id, "resolution": resolution_id},
+                timespent,
+            )
+        )
+        print(
+            "[%s]%s\n  %s"
+            % (issue, transition_summary, "\n  ".join(comment.splitlines()))
+        )
+        if timespent:
+            print(" Time spent: %s" % timespent)
     print("")
 
     issue_comments = issue_upload
@@ -404,16 +510,18 @@ def parse_status_file(jira, filename, issues):
         sys.exit()
 
     # if we found something, let's update jira
-    for (issue,comment,transition) in issue_comments:
-        update_jira(jira, issue, comment, transition)
+    for issue, comment, transition, timespent in issue_comments:
+        update_jira(jira, issue, comment, transition, timespent)
 
     print("Successfully updated your Jira tickets!\n")
     if not cfg.args.s:
         print_status(status)
 
+
 def print_status_file(filename):
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         print(f.read())
+
 
 ################################################################################
 # Yaml
@@ -421,19 +529,20 @@ def print_status_file(filename):
 
 
 def get_extra_comments():
-    """ Read the jipdate config file and return all option comments. """
+    """Read the jipdate config file and return all option comments."""
     try:
-        yml_iter = cfg.yml_config['comments']
+        yml_iter = cfg.yml_config["comments"]
     except:
         # Probably no "comments" section in the yml-file.
         return "\n"
 
     return ("\n".join(yml_iter) + "\n") if yml_iter is not None else "\n"
 
+
 def get_header():
-    """ Read the jipdate config file and return all option header. """
+    """Read the jipdate config file and return all option header."""
     try:
-        yml_iter = cfg.yml_config['header']
+        yml_iter = cfg.yml_config["header"]
     except:
         # Probably no "comments" section in the yml-file.
         return ""
@@ -442,10 +551,10 @@ def get_header():
 
 
 def merge_issue_header():
-    """ Read the configuration flag which decides if the issue and issue header
-    shall be combined. """
+    """Read the configuration flag which decides if the issue and issue header
+    shall be combined."""
     try:
-        yml_iter = cfg.yml_config['use_combined_issue_header']
+        yml_iter = cfg.yml_config["use_combined_issue_header"]
     except:
         # Probably no "use_combined_issue_header" section in the yml-file.
         return False
@@ -453,9 +562,9 @@ def merge_issue_header():
 
 
 def get_header_separator():
-    """ Read the separator from the jipdate config file. """
+    """Read the separator from the jipdate config file."""
     try:
-        yml_iter = cfg.yml_config['separator']
+        yml_iter = cfg.yml_config["separator"]
     except:
         # Probably no "separator" section in the yml-file.
         return " | "
@@ -463,17 +572,18 @@ def get_header_separator():
 
 
 def get_editor():
-    """ Read the configuration flag that will decide whether to show the text
-    editor by default or not. """
+    """Read the configuration flag that will decide whether to show the text
+    editor by default or not."""
     try:
-        yml_iter = cfg.yml_config['text-editor']
+        yml_iter = cfg.yml_config["text-editor"]
     except:
         # Probably no "text-editor" section in the yml-file.
         return True
     return yml_iter
 
+
 def initialize_logger(args):
-    LOG_FMT = ("[%(levelname)s] %(funcName)s():%(lineno)d   %(message)s")
+    LOG_FMT = "[%(levelname)s] %(funcName)s():%(lineno)d   %(message)s"
     lvl = log.ERROR
     if args.v:
         lvl = log.DEBUG
@@ -482,13 +592,15 @@ def initialize_logger(args):
         # filename="core.log",
         level=lvl,
         format=LOG_FMT,
-        filemode='w')
+        filemode="w",
+    )
 
 
 ################################################################################
 # Main function
 ################################################################################
-def main(argv):
+def main():
+    argv = sys.argv
     parser = get_parser()
 
     # The parser arguments (cfg.args) are accessible everywhere after this call.
@@ -525,7 +637,9 @@ def main(argv):
     elif cfg.args.file is not None:
         filename = cfg.args.file
     else:
-        log.error("Trying to run script with unsupported configuration. Try using --help.")
+        log.error(
+            "Trying to run script with unsupported configuration. Try using --help."
+        )
         sys.exit(os.EX_USAGE)
 
     if get_editor():
@@ -539,5 +653,6 @@ def main(argv):
     else:
         parse_status_file(jira, filename, issues)
 
+
 if __name__ == "__main__":
-    main(sys.argv)
+    main()

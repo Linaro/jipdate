@@ -23,7 +23,7 @@ I want to update only my Epics
 
 .. code-block:: bash
 
-    $ ./jipdate.py -q -e
+    $ jipdate -q -e
 
 
 I want to update my Initiatives and Epics
@@ -34,7 +34,7 @@ I want to update my Initiatives and Epics
 
 .. code-block:: bash
 
-    $ ./jipdate.py -q
+    $ jipdate -q
 
 
 I want to update all my tickets (Initiatives, Epics, Stories, Sub tasks)
@@ -45,7 +45,7 @@ I want to update all my tickets (Initiatives, Epics, Stories, Sub tasks)
 
 .. code-block:: bash
 
-    $ ./jipdate.py -q --all
+    $ jipdate -q --all
 
 
 I want to update only my Epics and reuse my previous comment(s)
@@ -56,7 +56,7 @@ I want to update only my Epics and reuse my previous comment(s)
 
 .. code-block:: bash
 
-    $ ./jipdate.py -q -e -l
+    $ jipdate -q -e -l
 
 Here it's the ``-l`` that makes the difference and Jipdate will pull the last
 comment from the ticket(s) and include that in each section for each and every
@@ -70,7 +70,7 @@ I want to update my Initiatives and Epics and reuse my previous comment(s)
 
 .. code-block:: bash
 
-    $ ./jipdate.py -q -l
+    $ jipdate -q -l
 
 Here it's the ``-l`` that makes the difference and Jipdate will pull the last
 comment from the ticket(s) and include that in each section for each and every
@@ -87,7 +87,7 @@ everything.
 
 .. code-block:: bash
 
-    $ ./jipdate.py -q --all
+    $ jipdate -q --all
 
 In your Editor you will see a section for each Jira ticket (based on your given
 parameters to Jipdate). It could look like this:
@@ -107,8 +107,6 @@ change this to another state, then simply uncomment the line and write another
 state for it, i.e., change like we've done at line 4 here.
 
 .. code-block:: bash
-    :linenos:
-    :emphasize-lines: 4
 
     [SWG-368]
     # Header: Demo / Test issue three
@@ -123,6 +121,24 @@ state for it, i.e., change like we've done at line 4 here.
     you get it wrong, Jipdate will return an error and also show the possible
     combinations. Example. ``todo`` is wrong, but ``to do`` is correct!
 
+.. code-block:: bash
+
+    ...
+    [SWG-368]
+    # Header: Demo / Test issue three
+    # Type: Epic
+    Status: In progress
+    Time spent: 4h
+    Updates since last week.
+    ...
+
+Here you can see ``Status`` in ``In progress``, and ``Time spent`` on this issue is ste to 4 hours. There are also some updates, and these updates ``Updates since last week.`` will be updated under ``Comments`` and under ``Work log`` in that ticket.
+
+.. note::
+
+    ``Time spent`` can be written in the formats: ``5m``, ``5h``, ``5d`` and ``5w``,
+    and that means ``m (minutes), h (hours), d (days), w (weeks)``.
+
 Updates with status reports
 ===========================
 
@@ -134,7 +150,7 @@ I want to update my Epics and create a status report
 
 .. code-block:: bash
 
-    $ ./jipdate.py -q -e -f status_report_week_xy.txt
+    $ jipdate -q -e -f status_report_week_xy.txt
 
 When the script has finished running you will have a file
 ``status_report_week_xy.txt`` in the folder with your entire status update ready
@@ -155,7 +171,7 @@ I want to update my issues based on my own status file
 
 .. code-block:: bash
 
-    $ ./jipdate.py -f my_status.txt
+    $ jipdate -f my_status.txt
 
 The use case here is that you have a Jipdate status file stored locally that you
 update on regular basis and you basically never query Jira itself.
@@ -172,7 +188,7 @@ I want to see what tickets person firstname.lastname are working with
 
 .. code-block:: bash
 
-    $ ./jipdate.py -q -u john.doe
+    $ jipdate -q -u john.doe
 
 .. note::
 
@@ -188,7 +204,7 @@ I want to see the last updates on tickets assigned to firstname.lastname
 
 .. code-block:: bash
 
-    $ ./jipdate.py -q -u john.doe -l
+    $ jipdate -q -u john.doe -l
 
 .. note::
 
@@ -204,7 +220,7 @@ I only want to print my status to stdout
 
 .. code-block:: bash
 
-    $ ./jipdate.py -q -p
+    $ jipdate -q -p
 
 This can be combined with other flags (e.g. ``--all``, ``-e`` etc).
 
@@ -216,7 +232,7 @@ I want to use a test-server / sandbox
 -------------------------------------
 .. code-block:: bash
 
-    $ ./jipdate.py -t -q
+    $ jipdate -t -q
 
 Here we provide ``-t`` which will use Linaro's `test server`_ instead of the
 real Jira instance. This is totally safe to use when playing around and testing
@@ -227,7 +243,7 @@ I want to do a dry-run
 ----------------------
 .. code-block:: bash
 
-    $ ./jipdate.py -q --dry-run
+    $ jipdate -q --dry-run
 
 With ``--dry-run`` you can query the real Jira instance without risking to make
 any updates. I.e., this can be used as a complement to query the `test server`_.
@@ -236,7 +252,7 @@ I want to see more debugging text from Jipdate
 ----------------------------------------------
 .. code-block:: bash
 
-    $ ./jipdate.py -q -v
+    $ jipdate -q -v
 
 
 .. _test server: https://dev-projects.linaro.org
