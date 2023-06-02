@@ -18,16 +18,19 @@ from jipdate import cfg
 from jipdate import jiralogin
 
 import pprint
+
 pprint = pprint.PrettyPrinter().pprint
+
 
 def add_domain(user):
     """
     Helper function that appends @linaro.org to the username. It does nothing if
     it is already included.
     """
-    if '@' not in user:
+    if "@" not in user:
         user = user + "@linaro.org"
     return user
+
 
 def default_jql():
     project = cfg.args.project
@@ -44,9 +47,12 @@ def default_jql():
         # we construct the query as:
         # (assignee = 'user1' or assignee = 'user2' )
         users = list(map(add_domain, cfg.args.user))
-        jql = '(' + ' or '.join(map(lambda str: 'assignee = \'' + str + '\'' , users)) + ')'
+        jql = (
+            "(" + " or ".join(map(lambda str: "assignee = '" + str + "'", users)) + ")"
+        )
 
     return jql
+
 
 def enumerate_updates(jira):
     since = datetime.datetime.now() - datetime.timedelta(days=int(cfg.args.days))
@@ -55,47 +61,56 @@ def enumerate_updates(jira):
     jql += "AND updatedDate > -%sd" % cfg.args.days
     log.debug(jql)
 
-    my_issues = jira.search_issues(jql, expand="changelog", fields="summary,comment,components,assignee,created")
+    my_issues = jira.search_issues(
+        jql, expand="changelog", fields="summary,comment,components,assignee,created"
+    )
     if my_issues.total > my_issues.maxResults:
-        my_issues = jira.search_issues(jql, expand="changelog", fields="summary,comment,components,assignee,created",
-                                       maxResults=my_issues.total)
+        my_issues = jira.search_issues(
+            jql,
+            expand="changelog",
+            fields="summary,comment,components,assignee,created",
+            maxResults=my_issues.total,
+        )
 
     for issue in my_issues:
         changelog = issue.changelog
         comments = issue.fields.comment.comments
 
         status = {}
-        status['issue'] = str(issue)
+        status["issue"] = str(issue)
         if issue.fields.assignee:
-            status['assignee'] = issue.fields.assignee.displayName
+            status["assignee"] = issue.fields.assignee.displayName
         else:
-            status['assignee'] = 'Unassigned'
-        status['summary'] = issue.fields.summary
-        status['comments'] = []
-        status['resolution'] = None
-        status['components'] = issue.fields.components
+            status["assignee"] = "Unassigned"
+        status["summary"] = issue.fields.summary
+        status["comments"] = []
+        status["resolution"] = None
+        status["components"] = issue.fields.components
 
-        created = datetime.datetime.strptime(issue.fields.created, '%Y-%m-%dT%H:%M:%S.%f%z')
+        created = datetime.datetime.strptime(
+            issue.fields.created, "%Y-%m-%dT%H:%M:%S.%f%z"
+        )
         if created.replace(tzinfo=None) > since:
-            status['resolution'] = 'Created'
+            status["resolution"] = "Created"
 
         for comment in comments:
-            when = datetime.datetime.strptime(comment.created, '%Y-%m-%dT%H:%M:%S.%f%z')
+            when = datetime.datetime.strptime(comment.created, "%Y-%m-%dT%H:%M:%S.%f%z")
             if when.replace(tzinfo=None) < since:
                 continue
 
-            status['comments'].append(comment.body)
+            status["comments"].append(comment.body)
 
         for history in changelog.histories:
-            when = datetime.datetime.strptime(history.created, '%Y-%m-%dT%H:%M:%S.%f%z')
+            when = datetime.datetime.strptime(history.created, "%Y-%m-%dT%H:%M:%S.%f%z")
             if when.replace(tzinfo=None) < since:
                 continue
             for item in history.items:
-                if item.field == 'resolution':
-                    status['resolution'] = item.toString
+                if item.field == "resolution":
+                    status["resolution"] = item.toString
 
-        if len(status['comments']) != 0 or status['resolution']:
-            yield(status)
+        if len(status["comments"]) != 0 or status["resolution"]:
+            yield (status)
+
 
 def enumerate_pending(jira):
     since = datetime.datetime.now() - datetime.timedelta(days=7)
@@ -106,69 +121,110 @@ def enumerate_pending(jira):
             AND issuetype != Epic"
     log.debug(jql)
 
-    my_issues = jira.search_issues(jql, expand="changelog", fields="summary,assignee,created,components")
+    my_issues = jira.search_issues(
+        jql, expand="changelog", fields="summary,assignee,created,components"
+    )
     if my_issues.total > my_issues.maxResults:
-        my_issues = jira.search_issues(jql, expand="changelog", fields="summary,assignee,created,components",
-                                       maxResults=my_issues.total)
+        my_issues = jira.search_issues(
+            jql,
+            expand="changelog",
+            fields="summary,assignee,created,components",
+            maxResults=my_issues.total,
+        )
 
     for issue in my_issues:
         status = {}
-        status['issue'] = str(issue)
+        status["issue"] = str(issue)
         if issue.fields.assignee:
-            status['assignee'] = issue.fields.assignee.displayName
+            status["assignee"] = issue.fields.assignee.displayName
         else:
-            status['assignee'] = 'Unassigned'
-        status['summary'] = issue.fields.summary
-        status['components'] = issue.fields.components
+            status["assignee"] = "Unassigned"
+        status["summary"] = issue.fields.summary
+        status["components"] = issue.fields.components
 
-        created = datetime.datetime.strptime(issue.fields.created, '%Y-%m-%dT%H:%M:%S.%f%z')
-        status['new'] = created.replace(tzinfo=None) > since
+        created = datetime.datetime.strptime(
+            issue.fields.created, "%Y-%m-%dT%H:%M:%S.%f%z"
+        )
+        status["new"] = created.replace(tzinfo=None) > since
 
-        yield(status)
+        yield (status)
+
 
 ################################################################################
 # Argument parser
 ################################################################################
 def get_parser():
-    """ Takes care of script argument parsing. """
-    parser = ArgumentParser(description='Script used to update comments in Jira')
+    """Takes care of script argument parsing."""
+    parser = ArgumentParser(description="Script used to update comments in Jira")
 
-    parser.add_argument('--test', required=False, action="store_true", \
-            default=False, \
-            help='Use the test server')
+    parser.add_argument(
+        "--test",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Use the test server",
+    )
 
-    parser.add_argument('-u', '--user', required=False, action="append", \
-            default=None, \
-            help='Query Jira with another Jira username \
-            (first.last or first.last@linaro.org)')
+    parser.add_argument(
+        "-u",
+        "--user",
+        required=False,
+        action="append",
+        default=None,
+        help="Query Jira with another Jira username \
+            (first.last or first.last@linaro.org)",
+    )
 
-    parser.add_argument('-p', '--project', required=False, action="store", \
-            default=None, \
-            type = str.upper, \
-            help='Query Jira for only a specifc project')
+    parser.add_argument(
+        "-p",
+        "--project",
+        required=False,
+        action="store",
+        default=None,
+        type=str.upper,
+        help="Query Jira for only a specifc project",
+    )
 
-    parser.add_argument('-t', '--team', required=False, action="store", \
-            default=None, \
-            type = str.lower, \
-            help='Query Jira for only issues assigned to members of a specific tema (eg. linaro-landing-team-qualcomm)')
+    parser.add_argument(
+        "-t",
+        "--team",
+        required=False,
+        action="store",
+        default=None,
+        type=str.lower,
+        help="Query Jira for only issues assigned to members of a specific tema (eg. linaro-landing-team-qualcomm)",
+    )
 
-    parser.add_argument('--days', required=False, action="store", \
-            default=7, \
-            help='Period of the report in days')
+    parser.add_argument(
+        "--days",
+        required=False,
+        action="store",
+        default=7,
+        help="Period of the report in days",
+    )
 
-    parser.add_argument('--html', required=False, nargs='?', action="store", \
-            const='status.html', \
-            help='Store output to HTML file')
+    parser.add_argument(
+        "--html",
+        required=False,
+        nargs="?",
+        action="store",
+        const="status.html",
+        help="Store output to HTML file",
+    )
 
-    parser.add_argument('-v', required=False, action="store_true", \
-            default=False, \
-            help='Output some verbose debugging info')
+    parser.add_argument(
+        "-v",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Output some verbose debugging info",
+    )
 
     return parser
 
 
 def initialize_logger(args):
-    LOG_FMT = ("[%(levelname)s] %(funcName)s():%(lineno)d   %(message)s")
+    LOG_FMT = "[%(levelname)s] %(funcName)s():%(lineno)d   %(message)s"
     lvl = log.ERROR
     if args.v:
         lvl = log.DEBUG
@@ -177,7 +233,9 @@ def initialize_logger(args):
         # filename="core.log",
         level=lvl,
         format=LOG_FMT,
-        filemode='w')
+        filemode="w",
+    )
+
 
 ################################################################################
 # Template for outout
@@ -246,6 +304,7 @@ output_html = """
 </html>
 """
 
+
 ################################################################################
 # Main function
 ################################################################################
@@ -270,18 +329,35 @@ def main():
     updates = list(enumerate_updates(jira))
     pendings = list(enumerate_pending(jira))
 
-    assignees = sorted(set([u['assignee'] for u in updates]) | set([p['assignee'] for p in pendings]))
+    assignees = sorted(
+        set([u["assignee"] for u in updates]) | set([p["assignee"] for p in pendings])
+    )
     # Move "Unassigned" issues to the end
-    assignees.sort(key='Unassigned'.__eq__)
+    assignees.sort(key="Unassigned".__eq__)
 
     template = Template(output)
-    print(template.render(assignees=assignees, updates=updates, pendings=pendings, url=jira.client_info()))
+    print(
+        template.render(
+            assignees=assignees,
+            updates=updates,
+            pendings=pendings,
+            url=jira.client_info(),
+        )
+    )
 
     if cfg.args.html:
-        f = open(cfg.args.html, 'w')
+        f = open(cfg.args.html, "w")
         template = Template(output_html)
-        f.write(template.render(assignees=assignees, updates=updates, pendings=pendings, url=jira.client_info()))
+        f.write(
+            template.render(
+                assignees=assignees,
+                updates=updates,
+                pendings=pendings,
+                url=jira.client_info(),
+            )
+        )
         f.close()
+
 
 if __name__ == "__main__":
     main()

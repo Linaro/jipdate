@@ -3,8 +3,8 @@ import os
 import sys
 import yaml
 
-TEST_SERVER = { 'url' : 'https://dev-projects.linaro.org' }
-PRODUCTION_SERVER = { 'url' : 'https://projects.linaro.org' }
+TEST_SERVER = {"url": "https://dev-projects.linaro.org"}
+PRODUCTION_SERVER = {"url": "https://projects.linaro.org"}
 
 args = None
 
@@ -12,8 +12,8 @@ args = None
 # .config.yml/config.yml in either the application directory, the $HOME
 # directory or the  $HOME/.config/jipdate directory.
 config_app_dir = sys.path[0]
-config_home_config_dir = os.environ['HOME'] + "/.config/jipdate"
-config_home_dir = os.environ['HOME']
+config_home_config_dir = os.environ["HOME"] + "/.config/jipdate"
+config_home_dir = os.environ["HOME"]
 config_locations = [config_app_dir, config_home_dir, config_home_config_dir]
 config_path = config_home_config_dir
 
@@ -31,8 +31,8 @@ yml_config = None
 # Global config file used by different scripts
 ################################################################################
 def create_default_config():
-    """ Creates a default YAML config file for use with jipdate (default
-    location is $HOME/.config/jipdate """
+    """Creates a default YAML config file for use with jipdate (default
+    location is $HOME/.config/jipdate"""
     yml_cfg = """# Config file for jipdate
 # For use in future (backwards compatibility)
 version: 1
@@ -72,12 +72,12 @@ text-editor: True"""
 
     if not os.path.exists(config_path):
         os.makedirs(config_path)
-    with open(config_path + "/" + config_filename, 'w') as f:
+    with open(config_path + "/" + config_filename, "w") as f:
         f.write(yml_cfg)
 
 
 def get_config_file():
-    """ Returns the location for the config file (including the path). """
+    """Returns the location for the config file (including the path)."""
     global config_locations
     global config_legacy_filename
     global config_path
@@ -97,15 +97,15 @@ def get_server(use_test_server=False):
     # Get Jira Server details. Check first if using the test server
     # then try user config file, then default from cfg.py
     if use_test_server is False:
-        server = yml_config.get('server', PRODUCTION_SERVER)
+        server = yml_config.get("server", PRODUCTION_SERVER)
     else:
-        server = yml_config.get('test_server', TEST_SERVER)
+        server = yml_config.get("test_server", TEST_SERVER)
 
     return server
 
 
 def initiate_config():
-    """ Reads the config file (yaml format) and returns the sets the global
+    """Reads the config file (yaml format) and returns the sets the global
     instance.
     """
     global yml_config
@@ -116,5 +116,5 @@ def initiate_config():
         create_default_config()
 
     log.debug("Using config file: %s" % config_file)
-    with open(config_file, 'r') as yml:
+    with open(config_file, "r") as yml:
         yml_config = yaml.load(yml, Loader=yaml.FullLoader)

@@ -14,18 +14,20 @@ import yaml
 from jipdate import cfg
 from jipdate import jiralogin
 
+
 ################################################################################
 # Class node
 ################################################################################
-class Node():
+class Node:
     """A node representing an issue in Jira"""
+
     def __init__(self, key, summary, issuetype):
         """Return a node containing the must have feature to be represented in a
         tree."""
         self.key = key
         self.summary = summary
         # Take care of some characters not supported in xml
-        self.summary = self.summary.replace("\"", "'")
+        self.summary = self.summary.replace('"', "'")
         self.summary = self.summary.replace("&", "and")
         self.issuetype = issuetype
         self.assignee = None
@@ -41,8 +43,16 @@ class Node():
         self._sortval = 3
 
     def __str__(self):
-        s =  "%s%s: %s [%s]\n"              % (" " * self._indent, self.key, self.summary, self.issuetype)
-        s += "%s     |   sponsors:    %s\n" % (" " * self._indent, ", ".join(self.sponsors))
+        s = "%s%s: %s [%s]\n" % (
+            " " * self._indent,
+            self.key,
+            self.summary,
+            self.issuetype,
+        )
+        s += "%s     |   sponsors:    %s\n" % (
+            " " * self._indent,
+            ", ".join(self.sponsors),
+        )
         s += "%s     |   assignee:    %s\n" % (" " * self._indent, self.assignee)
         s += "%s     |   description: %s\n" % (" " * self._indent, self.description)
         s += "%s     |   parent:      %s\n" % (" " * self._indent, self.parent)
@@ -81,14 +91,14 @@ class Node():
         self.description = description
 
     def get_description(self, description):
-        #try:
+        # try:
         #    f.write("<richcontent TYPE=\"DETAILS\" HIDDEN=\"true\"\n>")
         #    f.write("<html>\n<head>\n</head>\n<body>\n<p>\n")
         #    f.write(issue.fields.description)
-        #except UnicodeEncodeError:
+        # except UnicodeEncodeError:
         #    vprint("UnicodeEncodeError in description in %s" % str(issue))
         #    f.write("Unicode error in description, please go to Jira\n")
-        #f.write("\n</p>\n</body>\n</html>\n</richcontent>\n")
+        # f.write("\n</p>\n</body>\n</html>\n</richcontent>\n")
         return self.description
 
     def add_parent(self, key):
@@ -121,11 +131,11 @@ class Node():
         if self.color is not None:
             return self.color
 
-        color = "#990000" # Red
+        color = "#990000"  # Red
         if self.state == "In Progress":
-            color = "#009900" # Green
+            color = "#009900"  # Green
         elif self.state in ["Blocked", "To Do"]:
-            color = "#ff6600" # Orange
+            color = "#ff6600"  # Orange
         return color
 
     def set_base_url(self, base_url):
@@ -156,35 +166,42 @@ class Node():
         if cfg.args.i and self.issuetype == "Initiative":
             fold = "true"
 
-        xml_start = "%s<node LINK=\"%s\" TEXT=\"%s/%s: %s\" FOLDED=\"%s\" COLOR=\"%s\">\n" % \
-                (" " * self._indent,
-                 self.get_url(),
-                 self._short_type(),
-                 self.key,
-                 self.summary,
-                 fold,
-                 self.get_color())
+        xml_start = '%s<node LINK="%s" TEXT="%s/%s: %s" FOLDED="%s" COLOR="%s">\n' % (
+            " " * self._indent,
+            self.get_url(),
+            self._short_type(),
+            self.key,
+            self.summary,
+            fold,
+            self.get_color(),
+        )
         f.write(xml_start)
 
         # Info start
-        xml_info_start = "%s<node TEXT=\"info\" FOLDED=\"true\" COLOR=\"#000000\">\n" % \
-                (" " * (self._indent + 4))
+        xml_info_start = '%s<node TEXT="info" FOLDED="true" COLOR="#000000">\n' % (
+            " " * (self._indent + 4)
+        )
         f.write(xml_info_start)
 
         # Assignee, single node
-        xml_assignee = "%s<node TEXT=\"Assignee: %s\" FOLDED=\"false\" COLOR=\"#000000\"/>\n" % \
-                (" " * (self._indent + 8),
-                        self.assignee)
+        xml_assignee = (
+            '%s<node TEXT="Assignee: %s" FOLDED="false" COLOR="#000000"/>\n'
+            % (" " * (self._indent + 8), self.assignee)
+        )
         f.write(xml_assignee)
 
         # Sponsors
-        xml_sponsor_start = "%s<node TEXT=\"Sponsors\" FOLDED=\"false\" COLOR=\"#000000\">\n" % \
-                (" " * (self._indent + 8))
+        xml_sponsor_start = (
+            '%s<node TEXT="Sponsors" FOLDED="false" COLOR="#000000">\n'
+            % (" " * (self._indent + 8))
+        )
         f.write(xml_sponsor_start)
 
         for s in self.sponsors:
-            xml_sponsor = "%s<node TEXT=\"%s\" FOLDED=\"false\" COLOR=\"#000000\"/>\n" % \
-                    (" " * (self._indent + 12), s)
+            xml_sponsor = '%s<node TEXT="%s" FOLDED="false" COLOR="#000000"/>\n' % (
+                " " * (self._indent + 12),
+                s,
+            )
             f.write(xml_sponsor)
 
         # Sponsors end
@@ -203,6 +220,7 @@ class Node():
         xml_end = "%s%s" % (" " * self._indent, "</node>\n")
         f.write(xml_end)
 
+
 def open_file(filename):
     """
     This will open the user provided file and if there has not been any file
@@ -214,68 +232,112 @@ def open_file(filename):
     else:
         return tempfile.NamedTemporaryFile(delete=False)
 
+
 def get_parent_key(jira, issue):
     if hasattr(issue.fields, "customfield_10005"):
-        return getattr(issue.fields, "customfield_10005");
+        return getattr(issue.fields, "customfield_10005")
     return None
+
 
 ################################################################################
 # Argument parser
 ################################################################################
 def get_parser():
-    """ Takes care of script argument parsing. """
-    parser = ArgumentParser(description='Script used to generate Freeplane mindmap files')
+    """Takes care of script argument parsing."""
+    parser = ArgumentParser(
+        description="Script used to generate Freeplane mindmap files"
+    )
 
-    parser.add_argument('-i', required=False, action="store_true", \
-            default=False, \
-            help='Show Initiatives only')
+    parser.add_argument(
+        "-i",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Show Initiatives only",
+    )
 
-    parser.add_argument('-p', '--project', required=False, action="store", \
-            default="SWG", \
-            help='Project type (SWG, VIRT, KWG etc)')
+    parser.add_argument(
+        "-p",
+        "--project",
+        required=False,
+        action="store",
+        default="SWG",
+        help="Project type (SWG, VIRT, KWG etc)",
+    )
 
-    parser.add_argument('-s', required=False, action="store_true", \
-            default=False, \
-            help='Show stories also')
+    parser.add_argument(
+        "-s",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Show stories also",
+    )
 
-    parser.add_argument('-t', required=False, action="store_true", \
-            default=False, \
-            help='Use the test server')
+    parser.add_argument(
+        "-t",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Use the test server",
+    )
 
-    parser.add_argument('-v', required=False, action="store_true", \
-            default=False, \
-            help='Output some verbose debugging info')
+    parser.add_argument(
+        "-v",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Output some verbose debugging info",
+    )
 
-    parser.add_argument('--all', required=False, action="store_true", \
-            default=False, \
-            help='Load all Jira issues, not just the once marked in progress.')
+    parser.add_argument(
+        "--all",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Load all Jira issues, not just the once marked in progress.",
+    )
 
-    parser.add_argument('--desc', required=False, action="store_true", \
-            default=False, \
-            help='Add description to the issues')
+    parser.add_argument(
+        "--desc",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Add description to the issues",
+    )
 
-    parser.add_argument('--test', required=False, action="store_true", \
-            default=False, \
-            help='Run test case and then exit')
+    parser.add_argument(
+        "--test",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Run test case and then exit",
+    )
 
     return parser
+
 
 ################################################################################
 # General nodes
 ################################################################################
 def root_nodes_start(f, key):
-    f.write("<map version=\"freeplane 1.6.0\">\n")
-    f.write("<node LINK=\"%s\" TEXT=\"%s\" FOLDED=\"false\" COLOR=\"#000000\" LOCALIZED_STYLE_REF=\"AutomaticLayout.level.root\">\n"
-        % (cfg.server + "/projects/" + key, key))
+    f.write('<map version="freeplane 1.6.0">\n')
+    f.write(
+        '<node LINK="%s" TEXT="%s" FOLDED="false" COLOR="#000000" LOCALIZED_STYLE_REF="AutomaticLayout.level.root">\n'
+        % (cfg.server + "/projects/" + key, key)
+    )
+
 
 def root_nodes_end(f):
     f.write("</node>\n</map>")
 
+
 def orphan_node_start(f):
-    f.write("<node TEXT=\"Orphans\" POSITION=\"left\" FOLDED=\"false\" COLOR=\"#000000\">\n")
+    f.write('<node TEXT="Orphans" POSITION="left" FOLDED="false" COLOR="#000000">\n')
+
 
 def orphan_node_end(f):
     f.write("</node>\n")
+
 
 ################################################################################
 # Test
@@ -325,6 +387,7 @@ def test():
     root_nodes_end(f)
     f.close()
 
+
 ################################################################################
 # Stories
 ################################################################################
@@ -335,11 +398,13 @@ def build_story_node(jira, story_key, d_handled=None, epic_node=None):
         return None
 
     # To prevent UnicodeEncodeError ignore unicode
-    summary = str(si.fields.summary.encode('ascii', 'ignore').decode())
+    summary = str(si.fields.summary.encode("ascii", "ignore").decode())
     story = Node(str(si.key), summary, str(si.fields.issuetype))
 
     try:
-        assignee = str(si.fields.assignee.displayName.encode('ascii', 'ignore').decode())
+        assignee = str(
+            si.fields.assignee.displayName.encode("ascii", "ignore").decode()
+        )
     except AttributeError:
         assignee = str(si.fields.assignee)
     story.add_assignee(assignee)
@@ -377,11 +442,13 @@ def build_epics_node(jira, epic_key, d_handled=None, initiative_node=None):
         d_handled[str(ei.key)] = [None, ei]
         return None
 
-    summary = str(ei.fields.summary.encode('ascii', 'ignore').decode())
+    summary = str(ei.fields.summary.encode("ascii", "ignore").decode())
     epic = Node(str(ei.key), summary, str(ei.fields.issuetype))
 
     try:
-        assignee = str(ei.fields.assignee.displayName.encode('ascii', 'ignore').decode())
+        assignee = str(
+            ei.fields.assignee.displayName.encode("ascii", "ignore").decode()
+        )
     except AttributeError:
         assignee = str(ei.fields.assignee)
     epic.add_assignee(assignee)
@@ -395,7 +462,6 @@ def build_epics_node(jira, epic_key, d_handled=None, initiative_node=None):
                 epic.add_sponsor(str(s.value))
     except AttributeError:
         epic.add_sponsor("No sponsor")
-
 
     epic.set_base_url(cfg.server)
 
@@ -425,6 +491,7 @@ def build_epics_node(jira, epic_key, d_handled=None, initiative_node=None):
     print(epic)
     return epic
 
+
 ################################################################################
 # Initiatives
 ################################################################################
@@ -433,11 +500,13 @@ def build_initiatives_node(jira, issue, d_handled):
         d_handled[str(issue.key)] = [None, issue]
         return None
 
-    summary = str(issue.fields.summary.encode('ascii', 'ignore').decode())
+    summary = str(issue.fields.summary.encode("ascii", "ignore").decode())
     initiative = Node(str(issue.key), summary, str(issue.fields.issuetype))
 
     try:
-        assignee = str(issue.fields.assignee.displayName.encode('ascii', 'ignore').decode())
+        assignee = str(
+            issue.fields.assignee.displayName.encode("ascii", "ignore").decode()
+        )
     except AttributeError:
         assignee = str(issue.fields.assignee)
     initiative.add_assignee(assignee)
@@ -454,7 +523,7 @@ def build_initiatives_node(jira, issue, d_handled):
     initiative.set_base_url(cfg.server)
     print(initiative)
 
-    d_handled[initiative.get_key()] = [initiative, issue] # Initiative
+    d_handled[initiative.get_key()] = [initiative, issue]  # Initiative
 
     # Deal with Epics
     for link in issue.fields.issuelinks:
@@ -518,19 +587,21 @@ def build_orphans_tree(jira, key, d_handled):
 
     return nodes
 
+
 ################################################################################
 # Config files
 ################################################################################
 def get_config_file():
-    """ Returns the location for the config file (including the path). """
+    """Returns the location for the config file (including the path)."""
     for d in cfg.config_locations:
         for f in [cfg.config_filename, cfg.config_legacy_filename]:
             checked_file = d + "/" + f
             if os.path.isfile(checked_file):
                 return d + "/" + f
 
+
 def initiate_config():
-    """ Reads the config file (yaml format) and returns the sets the global
+    """Reads the config file (yaml format) and returns the sets the global
     instance.
     """
     cfg.config_file = get_config_file()
@@ -538,8 +609,9 @@ def initiate_config():
         create_default_config()
 
     log.debug("Using config file: %s" % cfg.config_file)
-    with open(cfg.config_file, 'r') as yml:
+    with open(cfg.config_file, "r") as yml:
         cfg.yml_config = yaml.load(yml)
+
 
 ################################################################################
 # Main function
@@ -566,7 +638,6 @@ def main():
     if cfg.args.project:
         key = cfg.args.project
 
-
     # Open and initialize the file
     f = open_file(key + ".mm")
     root_nodes_start(f, key)
@@ -580,12 +651,12 @@ def main():
 
     # Take care of the orphans, i.e., those who has no connection to any
     # initiative in your project.
-    nodes_orpans  = build_orphans_tree(jira, key, d_handled)
+    nodes_orpans = build_orphans_tree(jira, key, d_handled)
 
     # FIXME: We run through this once more since, when we run it the first time
     # we will catch Epics and Stories who are not linked with
     # "implements/implemented by" but instead uses the so called "Epic" link.
-    nodes_orpans  = build_orphans_tree(jira, key, d_handled)
+    nodes_orpans = build_orphans_tree(jira, key, d_handled)
 
     # Dump the main tree to file
     for n in sorted(nodes):
@@ -599,6 +670,7 @@ def main():
     # End the file
     root_nodes_end(f)
     f.close()
+
 
 if __name__ == "__main__":
     main()
