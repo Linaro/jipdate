@@ -280,8 +280,14 @@ def print_issues(jira, issues):
                     timespent = issue["fields"]["timetracking"]["timeSpent"]
                 except KeyError:
                     timespent = 0
+                try:
+                    originalestimate = issue["fields"]["timetracking"][
+                        "originalEstimate"
+                    ]
+                except KeyError:
+                    originalestimate = "Not Set"
                 print(
-                    f"# Assignee: {issue['fields']['assignee']['displayName']}, Original Estimate: {issue['fields']['timetracking']['originalEstimate']}, Time Spent: {timespent}"
+                    f"# Assignee: {issue['fields']['assignee']['displayName']}, Original Estimate: {originalestimate}, Time Spent: {timespent}"
                 )
                 print(f"# Last comment, updated: {c[0].updated}, by: {c[0].author}")
                 comment = "# ---8<---\n# %s\n# --->8---\n" % "\n# ".join(
