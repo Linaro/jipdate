@@ -268,9 +268,10 @@ def print_issues(jira, issues):
         if cfg.args.description:
             print(f"# Description:")
             descriptions = issue["fields"]["description"]
-            for line in descriptions.split("\n"):
-                print(f"#   {line}")
-            print(f"#\n")
+            if descriptions:
+                for line in descriptions.split("\n"):
+                    print(f"#   {line}")
+                print(f"#\n")
 
         if cfg.args.comments:
             c = jira.comments(issue["key"])
