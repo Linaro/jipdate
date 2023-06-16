@@ -140,6 +140,15 @@ def get_parser():
     )
 
     parser.add_argument(
+        "-s",
+        "--single-field",
+        required=False,
+        action="store",
+        default=None,
+        help="""Fetch and print a single field FIELD:VALUE.""",
+    )
+
+    parser.add_argument(
         "-v",
         required=False,
         action="store_true",
@@ -231,10 +240,9 @@ def search_issues(jira, jql):
     max_results = 50
 
     while result["startAt"] < result["total"]:
-        result = jira.search_issues(
-            jql,
-            startAt=result["startAt"],
-            maxResults=max_results,
+        if cfg.args.single_field:
+            fields=[cfg.args.single_field[0]]
+        else:
             fields=[
                 "summary",
                 "description",
@@ -243,7 +251,12 @@ def search_issues(jira, jql):
                 "issuetype",
                 "assignee",
                 "timetracking",
-            ],
+            ]
+        result = jira.search_issues(
+            jql,
+            startAt=result["startAt"],
+            maxResults=max_results,
+            fields=fields,
             json_result=True,
         )
         issues += result["issues"]
@@ -262,6 +275,12 @@ def call_jqls(jira, jql):
 
 def print_issues(jira, issues):
     for issue in issues:
+        if cfg.args.single_field:
+            field = issue['fields'][cfg.args.single_field[0]]
+            value = field[cfg.args.single_field[1]]
+            print(f"{issue['key']} , {value}")
+            continue
+
         print(
             f"https://linaro.atlassian.net/browse/{issue['key']} , Type: {issue['fields']['issuetype']['name'].strip()},  Summary: {issue['fields']['summary'].strip()} , Created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]} , Status: {issue['fields']['status']['statusCategory']['name']}"
         )
@@ -310,6 +329,9 @@ def main():
 
     # The parser arguments (cfg.args) are accessible everywhere after this call.
     cfg.args = parser.parse_args()
+    if cfg.args.single_field:
+        cfg.args.single_field = cfg.args.single_field.split(":")
+        assert len(cfg.args.single_field) == 2
 
     initialize_logger(cfg.args)
 
