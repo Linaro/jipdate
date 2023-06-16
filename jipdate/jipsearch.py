@@ -140,6 +140,15 @@ def get_parser():
     )
 
     parser.add_argument(
+        "-s",
+        "--single-field",
+        required=False,
+        action="store",
+        default=None,
+        help="""Fetch and print a single field FIELD:VALUE.""",
+    )
+
+    parser.add_argument(
         "-v",
         required=False,
         action="store_true",
@@ -231,19 +240,22 @@ def search_issues(jira, jql):
     max_results = 50
 
     while result["startAt"] < result["total"]:
+        fields = [
+            "summary",
+            "description",
+            "created",
+            "status",
+            "issuetype",
+            "assignee",
+            "timetracking",
+        ]
+        if cfg.args.single_field:
+            fields.append(cfg.args.single_field[0])
         result = jira.search_issues(
             jql,
             startAt=result["startAt"],
             maxResults=max_results,
-            fields=[
-                "summary",
-                "description",
-                "created",
-                "status",
-                "issuetype",
-                "assignee",
-                "timetracking",
-            ],
+            fields=fields,
             json_result=True,
         )
         issues += result["issues"]
@@ -262,9 +274,25 @@ def call_jqls(jira, jql):
 
 def print_issues(jira, issues):
     for issue in issues:
-        print(
-            f"https://linaro.atlassian.net/browse/{issue['key']} , Type: {issue['fields']['issuetype']['name'].strip()},  Summary: {issue['fields']['summary'].strip()} , Created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]} , Status: {issue['fields']['status']['statusCategory']['name']}"
-        )
+        jira_link = "https://linaro.atlassian.net/browse"
+        output = f"{jira_link}/{issue['key']} , Type: {issue['fields']['issuetype']['name'].strip()}, Summary: {issue['fields']['summary'].strip()} , Created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]} , Status: {issue['fields']['status']['statusCategory']['name']}"
+        if issue["fields"]["assignee"]:
+            assignee_ = f", Assignee: {issue['fields']['assignee']['displayName']}, Assignee email: {issue['fields']['assignee']['emailAddress']}"
+            output += assignee_
+        if cfg.args.single_field:
+            try:
+                field = issue["fields"][cfg.args.single_field[0]]
+                value = (
+                    f" {cfg.args.single_field[0]}: {jira_link}/{field[cfg.args.single_field[1]]}"
+                    if cfg.args.single_field[0] == "parent"
+                    else f" {cfg.args.single_field[0]}: {field[cfg.args.single_field[1]]}"
+                )
+                print(f"{output},{value}")
+            except KeyError:
+                print(f"No key '{cfg.args.single_field[0]}'.")
+            continue
+
+        print(f"{output}")
         if cfg.args.description:
             print(f"# Description:")
             descriptions = issue["fields"]["description"]
@@ -310,6 +338,9 @@ def main():
 
     # The parser arguments (cfg.args) are accessible everywhere after this call.
     cfg.args = parser.parse_args()
+    if cfg.args.single_field:
+        cfg.args.single_field = cfg.args.single_field.split(":")
+        assert len(cfg.args.single_field) == 2
 
     initialize_logger(cfg.args)
 
