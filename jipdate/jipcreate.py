@@ -285,11 +285,20 @@ def main():
                         print(f"{field}: {fields[field]}")
                 else:
                     server = cfg.get_server()
-                    new_issue = jira.create_issue(fields=fields)
-                    created_cards[issue["Summary"]] = str(new_issue)
-                    print(
-                        f"New issue created: {server.get('url')}/browse/{new_issue}"
-                    )
+                    if "Key" in issue.keys():
+                        # Update existing card.
+                        existing = jira.issue(issue["Key"])
+                        existing.update(fields=fields)
+                        print(
+                            f"Existing issue updated: {server.get('url')}/browse/{existing}"
+                        )
+                    else:
+                        # Create new card.
+                        new_issue = jira.create_issue(fields=fields)
+                        created_cards[issue["Summary"]] = str(new_issue)
+                        print(
+                            f"New issue created: {server.get('url')}/browse/{new_issue}"
+                        )
     else:
         log.error(
             "Trying to run script with unsupported configuration. Try using --help."
