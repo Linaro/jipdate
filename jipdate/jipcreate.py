@@ -247,15 +247,25 @@ def main():
                     if len(share_visibility) > 0:
                         fields["customfield_10034"] = share_visibility
 
-                if sprint_found:
-                    # Check if all feilds are possible to set in this issuetype and project.
-                    for field in fields.keys():
-                        if field not in issue_fields_dict.keys():
-                            print(
-                                f"Field {field} set by script but not possible for issuetype and project in Jira."
-                            )
-                            sys.exit(os.EX_USAGE)
+                if not sprint_found:
+                    print(
+                        'Sprint "'
+                        + issue["Sprint"]
+                        + '" not found in project '
+                        + issue["Project"]
+                    )
+                    continue
 
+                # Check if all feilds are possible to set in this issuetype and project.
+                for field in fields.keys():
+                    if field not in issue_fields_dict.keys():
+                        print(
+                            f"Field {field} set by script but not possible for issuetype and project in Jira."
+                        )
+                        sys.exit(os.EX_USAGE)
+
+                if not "Key" in issue.keys():
+                    # Create new card.
                     # Check fields required by Jira.
                     for field in issue_fields_dict.keys():
                         if (
@@ -285,12 +295,20 @@ def main():
                             f"New issue created: {server.get('url')}/browse/{new_issue}"
                         )
                 else:
-                    print(
-                        'Sprint "'
-                        + issue["Sprint"]
-                        + '" not found in project '
-                        + issue["Project"]
-                    )
+                    # Update existing card.
+                    if cfg.args.dry_run:
+                        print(
+                            f"This issue would have been updated when running without '--dry-run':"
+                        )
+                        for field in fields.keys():
+                            print(f"{field}: {fields[field]}")
+                    else:
+                        server = cfg.get_server()
+                        existing = jira.issue(issue["Key"])
+                        existing.update(fields=fields)
+                        print(
+                            f"Existing issue updated: {server.get('url')}/browse/{existing}"
+                        )
     else:
         log.error(
             "Trying to run script with unsupported configuration. Try using --help."
