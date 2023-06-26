@@ -161,6 +161,15 @@ def get_parser():
     )
 
     parser.add_argument(
+        "-pk",
+        "--parent",
+        required=False,
+        action="store_true",
+        default=False,
+        help="""print parent key if available.""",
+    )
+
+    parser.add_argument(
         "-v",
         required=False,
         action="store_true",
@@ -267,6 +276,9 @@ def search_issues(jira, jql):
             for keys in re.findall(regex, cfg.args.format):
                 fields.append(keys.split(":")[0])
 
+        if cfg.args.parent:
+            fields.append("parent")
+
         result = jira.search_issues(
             jql,
             startAt=result["startAt"],
@@ -313,6 +325,15 @@ def print_issues(jira, issues):
         if issue["fields"]["assignee"]:
             assignee_ = f", Assignee: {issue['fields']['assignee']['displayName']}, Assignee email: {issue['fields']['assignee']['emailAddress']}"
             output += assignee_
+
+        if cfg.args.parent:
+            try:
+                field = issue["fields"]["parent"]
+                value = f" parent: {jira_link}/{field['key']}"
+                print(f"{output},{value}")
+            except KeyError:
+                print(f"No key 'parent'.")
+            continue
 
         print(f"{output}")
         if cfg.args.description:
