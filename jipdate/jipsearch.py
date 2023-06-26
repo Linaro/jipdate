@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 import logging as log
+import re
 import os
 import sys
 import yaml
@@ -140,12 +141,14 @@ def get_parser():
     )
 
     parser.add_argument(
-        "-s",
-        "--single-field",
+        "-f",
+        "--format",
         required=False,
         action="store",
         default=None,
-        help="""Fetch and print a single field FIELD:VALUE.""",
+        help="""Print in user's format string.
+        Example string:
+        --format 'Issue {key}, Parent issue: {parent:key}, Issue assignee email: {assignee:emailAddress}'""",
     )
 
     parser.add_argument(
@@ -249,8 +252,12 @@ def search_issues(jira, jql):
             "assignee",
             "timetracking",
         ]
-        if cfg.args.single_field:
-            fields.append(cfg.args.single_field[0])
+
+        if cfg.args.format:
+            regex = r"\{(.+?)\}"
+            for keys in re.findall(regex, cfg.args.format):
+                fields.append(keys.split(":")[0])
+
         result = jira.search_issues(
             jql,
             startAt=result["startAt"],
@@ -275,22 +282,28 @@ def call_jqls(jira, jql):
 def print_issues(jira, issues):
     for issue in issues:
         jira_link = "https://linaro.atlassian.net/browse"
+        if cfg.args.format:
+            regex = r"\{(.+?)\}"
+            format_line = re.sub(regex, "{}", cfg.args.format)
+            out = []
+            for keys in re.findall(regex, cfg.args.format):
+                tmp_output = issue["fields"]
+                for k in keys.split(":"):
+                    if len(keys.split(":")) == 1 and "key" == k:
+                        tmp_output = issue["key"]
+                    elif k in tmp_output:
+                        tmp_output = tmp_output[k]
+                    else:
+                        tmp_output = "None"
+                        continue
+                out.append(tmp_output)
+
+            print(format_line.format(*out))
+            continue
         output = f"{jira_link}/{issue['key']} , Type: {issue['fields']['issuetype']['name'].strip()}, Summary: {issue['fields']['summary'].strip()} , Created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]} , Status: {issue['fields']['status']['statusCategory']['name']}"
         if issue["fields"]["assignee"]:
             assignee_ = f", Assignee: {issue['fields']['assignee']['displayName']}, Assignee email: {issue['fields']['assignee']['emailAddress']}"
             output += assignee_
-        if cfg.args.single_field:
-            try:
-                field = issue["fields"][cfg.args.single_field[0]]
-                value = (
-                    f" {cfg.args.single_field[0]}: {jira_link}/{field[cfg.args.single_field[1]]}"
-                    if cfg.args.single_field[0] == "parent"
-                    else f" {cfg.args.single_field[0]}: {field[cfg.args.single_field[1]]}"
-                )
-                print(f"{output},{value}")
-            except KeyError:
-                print(f"No key '{cfg.args.single_field[0]}'.")
-            continue
 
         print(f"{output}")
         if cfg.args.description:
@@ -338,9 +351,6 @@ def main():
 
     # The parser arguments (cfg.args) are accessible everywhere after this call.
     cfg.args = parser.parse_args()
-    if cfg.args.single_field:
-        cfg.args.single_field = cfg.args.single_field.split(":")
-        assert len(cfg.args.single_field) == 2
 
     initialize_logger(cfg.args)
 
