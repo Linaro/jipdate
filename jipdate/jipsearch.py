@@ -152,6 +152,15 @@ def get_parser():
     )
 
     parser.add_argument(
+        "-k",
+        "--key",
+        required=False,
+        action="append",
+        default=None,
+        help="""Show information about a specific Epic/Story/Task.""",
+    )
+
+    parser.add_argument(
         "-v",
         required=False,
         action="store_true",
@@ -363,6 +372,11 @@ def main():
     if cfg.args.jql:
         jql = cfg.args.jql
         log.debug(f"JQL: " + jql[0])
+        issues = call_jqls(jira, jql)
+    elif cfg.args.key:
+        jql = []
+        for v in cfg.args.key:
+            jql.append(f"key={v}")
         issues = call_jqls(jira, jql)
     else:
         issues = call_jqls(jira, [""])
