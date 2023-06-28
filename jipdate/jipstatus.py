@@ -16,6 +16,7 @@ import yaml
 # Local files
 from jipdate import cfg
 from jipdate import jiralogin
+from jipdate import __version__
 
 import pprint
 
@@ -210,6 +211,10 @@ def get_parser():
         action="store",
         const="status.html",
         help="Store output to HTML file",
+    )
+
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s, {__version__}"
     )
 
     parser.add_argument(
