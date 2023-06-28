@@ -6,6 +6,7 @@ import os
 import sys
 import yaml
 from dateutil import parser
+from jira import JIRAError
 
 # Local files
 from jipdate import cfg
@@ -299,13 +300,17 @@ def search_issues(jira, jql):
         if cfg.args.parent:
             fields.append("parent")
 
-        result = jira.search_issues(
-            jql,
-            startAt=result["startAt"],
-            maxResults=max_results,
-            fields=fields,
-            json_result=True,
-        )
+        try:
+            result = jira.search_issues(
+                jql,
+                startAt=result["startAt"],
+                maxResults=max_results,
+                fields=fields,
+                json_result=True,
+            )
+        except JIRAError as e:
+            print(f"{e.text}")
+            exit(1)
         issues += result["issues"]
         result["startAt"] += max_results
 
