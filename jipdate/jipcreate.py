@@ -86,7 +86,7 @@ def parse_issue_file(new_issue_file):
 def initialize_logger(args):
     LOG_FMT = "[%(levelname)s] %(funcName)s():%(lineno)d   %(message)s"
     lvl = log.ERROR
-    if args.v:
+    if args.verbose:
         lvl = log.DEBUG
 
     log.basicConfig(
