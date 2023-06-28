@@ -169,6 +169,15 @@ def get_parser():
     )
 
     parser.add_argument(
+        "-s",
+        "--sprint",
+        required=False,
+        action="store",
+        default=None,
+        help="""Show Story/Task in sprint.""",
+    )
+
+    parser.add_argument(
         "-v",
         required=False,
         action="store_true",
@@ -212,6 +221,9 @@ def create_jql(jira, initial_jql):
 
     if cfg.args.project:
         jql_parts.append("project in (%s)" % cfg.args.project)
+
+    if cfg.args.sprint:
+        jql_parts.append("sprint in ('%s')" % cfg.args.sprint)
 
     if cfg.args.reporter:
         reporter_ids = []
