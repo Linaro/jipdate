@@ -154,6 +154,7 @@ def get_parser():
 
     parser.add_argument(
         "-v",
+        "--verbose",
         required=False,
         action="store_true",
         default=False,
