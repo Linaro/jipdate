@@ -63,10 +63,9 @@ def get_parser():
         "-a",
         "--assignee",
         required=False,
-        action="store",
+        action="append",
         default=None,
-        help="""Search for issues with the specified assignees.
-            Use comma to separate multiple reporters.""",
+        help="""Search for issues with the specified assignees.""",
     )
 
     parser.add_argument(
@@ -223,8 +222,7 @@ def create_jql(jira, initial_jql):
 
     if cfg.args.assignee:
         assignee_ids = []
-        assignees = cfg.args.assignee.split(",")
-        for r in assignees:
+        for r in cfg.args.assignee:
             assignee_ids += jira.search_users(query=r)
         if len(assignee_ids) > 0:
             account_ids = []
