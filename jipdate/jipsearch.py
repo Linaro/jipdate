@@ -206,6 +206,10 @@ def create_jql(jira, initial_jql):
     if initial_jql and initial_jql != "":
         jql_parts.append(initial_jql)
 
+    if cfg.args.key:
+        for v in cfg.args.key:
+            jql_parts.append(f"key={v}")
+
     if cfg.args.project:
         jql_parts.append("project in (%s)" % cfg.args.project)
 
@@ -391,11 +395,6 @@ def main():
     if cfg.args.jql:
         jql = cfg.args.jql
         log.debug(f"JQL: " + jql[0])
-        issues = call_jqls(jira, jql)
-    elif cfg.args.key:
-        jql = []
-        for v in cfg.args.key:
-            jql.append(f"key={v}")
         issues = call_jqls(jira, jql)
     else:
         issues = call_jqls(jira, [""])
