@@ -591,7 +591,7 @@ def get_editor():
 def initialize_logger(args):
     LOG_FMT = "[%(levelname)s] %(funcName)s():%(lineno)d   %(message)s"
     lvl = log.ERROR
-    if args.v:
+    if args.verbose:
         lvl = log.DEBUG
 
     log.basicConfig(
