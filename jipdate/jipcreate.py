@@ -14,6 +14,7 @@ import yaml
 # Local files
 from jipdate import cfg
 from jipdate import jiralogin
+from jipdate import __version__
 
 
 ################################################################################
@@ -48,6 +49,10 @@ def get_parser():
         action="store_true",
         default=False,
         help="Output some verbose debugging info",
+    )
+
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s, {__version__}"
     )
 
     parser.add_argument(
