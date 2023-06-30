@@ -54,8 +54,8 @@ def get_parser():
         required=False,
         action="store",
         default=sys.stdout,
-        type=FileType('w'), 
-        dest='output',
+        type=FileType("w"), 
+        dest="output",
         help="Directs the output to a name of your choice",
     )
 
@@ -252,8 +252,10 @@ def initialize_logger(args):
         filemode="w",
     )
 
+
 def print_output(s):
     cfg.args.output.write(str(s))
+
 
 def create_jql(jira, initial_jql):
     jql_parts = []
@@ -370,40 +372,40 @@ def call_jqls(jira, jql):
 
 def jira_value_to_yaml(field, jira_value):
     if jira_value: 
-        if field == 'issuetype':
-            return jira_value['name']
-        if field == 'project':
-            return jira_value['key']
-        if field == 'customfield_10020':
-            ret = jira_value[0]['name']
+        if field == "issuetype":
+            return jira_value["name"]
+        if field == "project":
+            return jira_value["key"]
+        if field == "customfield_10020":
+            ret = jira_value[0]["name"]
             for s in jira_value[1:]:
                 ret += f',{s["name"]}'
             return ret
-        if field == 'customfield_10104':
-            ret = jira_value[0]['value']
+        if field == "customfield_10104":
+            ret = jira_value[0]["value"]
             for s in jira_value[1:]:
                 ret += f',{s["value"]}'
             return ret
-        if field == 'customfield_10034':
+        if field == "customfield_10034":
             ret = f"[{jira_value[0]['emailAddress']}"
             for s in jira_value[1:]:
                 ret += f', {s["emailAddress"]}'
             ret += "]"
             return ret
-        if field == 'components':
-            ret = jira_value[0]['name']
+        if field == "components":
+            ret = jira_value[0]["name"]
             for s in jira_value[1:]:
                 ret += f',{s["name"]}'
             return ret
-        if field == 'assignee':
+        if field == "assignee":
             return jira_value['emailAddress']
-        if field == 'duedate':
+        if field == "duedate":
             return jira_value
-        if field == 'description':
+        if field == "description":
             return jira_value
-        if field == 'timetracking':
-            if 'originalEstimate' in jira_value:
-                return jira_value['originalEstimate']
+        if field == "timetracking":
+            if "originalEstimate" in jira_value:
+                return jira_value["originalEstimate"]
             else:
                 return None
         return jira_value
@@ -419,8 +421,7 @@ def print_issues(jira, issues):
             iss = {}
             for field in issue["fields"]:
                 if field in jira_field_to_yaml:
-                    #print_output(f"  {jira_field_to_yaml[field]}: {jira_value_to_yaml(field, issue['fields'][field])}\n")
-                    value = jira_value_to_yaml(field, issue['fields'][field])
+                    value = jira_value_to_yaml(field, issue["fields"][field])
                     if value is not None:
                         iss[jira_field_to_yaml[field]] = value
             cloneformat_issues.append(iss)
@@ -483,7 +484,9 @@ def print_issues(jira, issues):
                 print_output(
                     f"# Assignee: {issue['fields']['assignee']['displayName']}, Original Estimate: {originalestimate}, Time Spent: {timespent}"
                 )
-                print_output(f"# Last comment, updated: {c[0].updated}, by: {c[0].author}")
+                print_output(
+                    f"# Last comment, updated: {c[0].updated}, by: {c[0].author}"
+                )
                 comment = "# ---8<---\n# %s\n# --->8---\n" % "\n# ".join(
                     c[-1].body.splitlines()
                 )
