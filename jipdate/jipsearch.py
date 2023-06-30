@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
+from argparse import FileType
 import logging as log
 import re
 import os
@@ -29,6 +30,17 @@ def get_parser():
         default=None,
         help="""Query Jira with another Jira username
             (first.last or first.last@linaro.org)""",
+    )
+
+    parser.add_argument(
+        "-o",
+        "--outputfile",
+        required=False,
+        action="store",
+        default=sys.stdout,
+        type=FileType("w"),
+        dest="output",
+        help="Directs the output to a name of your choice",
     )
 
     parser.add_argument(
@@ -217,6 +229,10 @@ def initialize_logger(args):
     )
 
 
+def print_output(s):
+    cfg.args.output.write(str(s))
+
+
 def create_jql(jira, initial_jql):
     jql_parts = []
     if initial_jql and initial_jql != "":
@@ -311,7 +327,7 @@ def search_issues(jira, jql):
                 json_result=True,
             )
         except JIRAError as e:
-            print(f"{e.text}")
+            print_output(f"{e.text}")
             exit(1)
         issues += result["issues"]
         result["startAt"] += max_results
@@ -346,7 +362,7 @@ def print_issues(jira, issues):
                         continue
                 out.append(tmp_output)
 
-            print(format_line.format(*out))
+            print_output(format_line.format(*out))
             continue
         output = f"{jira_link}/{issue['key']} , Type: {issue['fields']['issuetype']['name'].strip()}, Summary: {issue['fields']['summary'].strip()} , Created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]} , Status: {issue['fields']['status']['statusCategory']['name']}"
         if issue["fields"]["assignee"]:
@@ -357,19 +373,19 @@ def print_issues(jira, issues):
             try:
                 field = issue["fields"]["parent"]
                 value = f" parent: {jira_link}/{field['key']}"
-                print(f"{output},{value}")
+                print_output(f"{output},{value}")
             except KeyError:
-                print(f"No key 'parent'.")
+                print_output(f"No key 'parent'.")
             continue
 
-        print(f"{output}")
+        print_output(f"{output}")
         if cfg.args.description:
-            print(f"# Description:")
+            print_output(f"# Description:")
             descriptions = issue["fields"]["description"]
             if descriptions:
                 for line in descriptions.split("\n"):
-                    print(f"#   {line}")
-                print(f"#\n")
+                    print_output(f"#   {line}")
+                print_output(f"#\n")
 
         if cfg.args.comments:
             c = jira.comments(issue["key"])
@@ -384,16 +400,18 @@ def print_issues(jira, issues):
                     ]
                 except KeyError:
                     originalestimate = "Not Set"
-                print(
+                print_output(
                     f"# Assignee: {issue['fields']['assignee']['displayName']}, Original Estimate: {originalestimate}, Time Spent: {timespent}"
                 )
-                print(f"# Last comment, updated: {c[0].updated}, by: {c[0].author}")
+                print_output(
+                    f"# Last comment, updated: {c[0].updated}, by: {c[0].author}"
+                )
                 comment = "# ---8<---\n# %s\n# --->8---\n" % "\n# ".join(
                     c[-1].body.splitlines()
                 )
-                print(comment)
+                print_output(comment)
 
-        # print(f"{issue['key']}, status: {issue['fields']['status']['statusCategory']['name']}, created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]}\n\t   Summary: {issue['fields']['summary']}\n\t   https://linaro.atlassian.net/browse/{issue['key']}")
+        # print_output(f"{issue['key']}, status: {issue['fields']['status']['statusCategory']['name']}, created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]}\n\t   Summary: {issue['fields']['summary']}\n\t   https://linaro.atlassian.net/browse/{issue['key']}")
 
 
 ################################################################################
