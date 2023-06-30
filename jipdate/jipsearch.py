@@ -223,8 +223,10 @@ def create_jql(jira, initial_jql):
         jql_parts.append(initial_jql)
 
     if cfg.args.key:
-        for v in cfg.args.key:
-            jql_parts.append(f"key={v}")
+        jql_part = f"key in ({cfg.args.key[0]}"
+        for v in cfg.args.key[1:]:
+            jql_part += f", {v}"
+        jql_parts.append(f"{jql_part})")
 
     if cfg.args.project:
         jql_parts.append("project in (%s)" % cfg.args.project)
