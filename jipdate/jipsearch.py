@@ -31,6 +31,7 @@ jira_field_to_yaml = {
     "customfield_10034": "Share Visibility",
 }
 
+
 ################################################################################
 # Argument parser
 ################################################################################
@@ -54,7 +55,7 @@ def get_parser():
         required=False,
         action="store",
         default=sys.stdout,
-        type=FileType("w"), 
+        type=FileType("w"),
         dest="output",
         help="Directs the output to a name of your choice",
     )
@@ -371,7 +372,7 @@ def call_jqls(jira, jql):
 
 
 def jira_value_to_yaml(field, jira_value):
-    if jira_value: 
+    if jira_value:
         if field == "issuetype":
             return jira_value["name"]
         if field == "project":
@@ -398,7 +399,7 @@ def jira_value_to_yaml(field, jira_value):
                 ret += f',{s["name"]}'
             return ret
         if field == "assignee":
-            return jira_value['emailAddress']
+            return jira_value["emailAddress"]
         if field == "duedate":
             return jira_value
         if field == "description":
