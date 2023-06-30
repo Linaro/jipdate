@@ -15,6 +15,23 @@ from jipdate import jiralogin
 from jipdate import __version__
 
 
+jira_field_to_yaml = {
+    "issuetype": "IssueType",
+    "project": "Project",
+    "summary": "Summary",
+    "description": "Description",
+    "assignee": "AssigneeEmail",
+    "customfield_10014": "EpicLink",
+    "customfield_10104": "ClientStakeholder",
+    "timetracking": "OriginalEstimate",
+    "components": "Components",
+    "customfield_10020": "Sprint",
+    "duedate": "Due date",
+    "customfield_10011": "Epic Name",
+    "customfield_10034": "Share Visibility",
+}
+
+
 ################################################################################
 # Argument parser
 ################################################################################
@@ -212,6 +229,14 @@ def get_parser():
         help="""Do not make any changes to JIRA""",
     )
 
+    parser.add_argument(
+        "--cloneformat",
+        required=False,
+        action="store_true",
+        default=False,
+        help="""Print all fields to enable creating a clone of the found issues.""",
+    )
+
     return parser
 
 
@@ -289,7 +314,6 @@ def create_jql(jira, initial_jql):
         jql_parts.append("updated <= %s" % cfg.args.updated_before)
 
     jql_string = " AND ".join(jql_parts)
-
     log.debug(f"{jql_string}")
     return jql_string
 
@@ -309,6 +333,10 @@ def search_issues(jira, jql):
             "assignee",
             "timetracking",
         ]
+
+        if cfg.args.cloneformat:
+            for key in jira_field_to_yaml:
+                fields.append(key)
 
         if cfg.args.format:
             regex = r"\{(.+?)\}"
@@ -343,9 +371,63 @@ def call_jqls(jira, jql):
     return issues
 
 
+def jira_value_to_yaml(field, jira_value):
+    if jira_value:
+        if field == "issuetype":
+            return jira_value["name"]
+        if field == "project":
+            return jira_value["key"]
+        if field == "customfield_10020":
+            ret = jira_value[0]["name"]
+            for s in jira_value[1:]:
+                ret += f',{s["name"]}'
+            return ret
+        if field == "customfield_10104":
+            ret = jira_value[0]["value"]
+            for s in jira_value[1:]:
+                ret += f',{s["value"]}'
+            return ret
+        if field == "customfield_10034":
+            ret = f"[{jira_value[0]['emailAddress']}"
+            for s in jira_value[1:]:
+                ret += f', {s["emailAddress"]}'
+            ret += "]"
+            return ret
+        if field == "components":
+            ret = jira_value[0]["name"]
+            for s in jira_value[1:]:
+                ret += f',{s["name"]}'
+            return ret
+        if field == "assignee":
+            return jira_value["emailAddress"]
+        if field == "duedate":
+            return jira_value
+        if field == "description":
+            return jira_value
+        if field == "timetracking":
+            if "originalEstimate" in jira_value:
+                return jira_value["originalEstimate"]
+            else:
+                return None
+        return jira_value
+    else:
+        return None
+
+
 def print_issues(jira, issues):
+    cloneformat_issues = []
     for issue in issues:
         jira_link = "https://linaro.atlassian.net/browse"
+        if cfg.args.cloneformat:
+            temp_issue = {}
+            for field in issue["fields"]:
+                if field in jira_field_to_yaml:
+                    value = jira_value_to_yaml(field, issue["fields"][field])
+                    if value is not None:
+                        temp_issue[jira_field_to_yaml[field]] = value
+            cloneformat_issues.append(temp_issue)
+            continue
+
         if cfg.args.format:
             regex = r"\{(.+?)\}"
             format_line = re.sub(regex, "{}", cfg.args.format)
@@ -412,6 +494,8 @@ def print_issues(jira, issues):
                 print_output(comment)
 
         # print_output(f"{issue['key']}, status: {issue['fields']['status']['statusCategory']['name']}, created: {str(parser.parse(issue['fields']['created'])).split(' ')[0]}\n\t   Summary: {issue['fields']['summary']}\n\t   https://linaro.atlassian.net/browse/{issue['key']}")
+    if cfg.args.cloneformat:
+        print_output(yaml.dump(cloneformat_issues))
 
 
 ################################################################################
