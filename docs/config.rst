@@ -255,6 +255,8 @@ Jira server, and jipdate supports password based authentication, as well as
 token based. Using token authentication is considered more secure than
 password. The `server` configuration must include at least an `url` attribute. A
 `token` attribute can be added optionally.
+To create an API token, follow the procedure described in the `Atlassian
+documentation`_.
 
 When the `token` attribute is present, Jipdate will use token based
 authentication. Otherwise, it will use password based authentication.
@@ -294,3 +296,4 @@ stored here, then jipdate won't ask for it when running the script.
 
 
 .. _YAML format: https://yaml.org/spec/1.2/spec.html
+.. _Atlassian documentation: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/#Create-an-API-token
