@@ -110,13 +110,31 @@ def get_jira_instance(use_test_server):
                 "Accessing %s with %s using token based authentication"
                 % (url, username)
             )
-            j = JIRA(url, basic_auth=(username, token)), username
+            j = (
+                JIRA(
+                    url,
+                    basic_auth=(username, token),
+                    options={
+                        "headers": {"Accept": "application/json;1=1.0, */*;q=0.9"}
+                    },
+                ),
+                username,
+            )
         else:
             log.debug(
                 "Accessing %s with %s using password based authentication"
                 % (url, username)
             )
-            j = JIRA(url, basic_auth=(username, password)), username
+            j = (
+                JIRA(
+                    url,
+                    basic_auth=(username, password),
+                    options={
+                        "headers": {"Accept": "application/json;1=1.0, */*;q=0.9"}
+                    },
+                ),
+                username,
+            )
     except JIRAError as e:
         if e.text.find("CAPTCHA_CHALLENGE") != -1:
             log.error(
