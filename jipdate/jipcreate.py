@@ -223,6 +223,8 @@ def main():
                     log.debug(f"Boards:")
                     for board in boards_in_project:
                         log.debug(f"* {board}")
+                        if board.type == "kanban":
+                            continue
                         sprints_in_board = jira.sprints(board_id=board.id)
                         log.debug(f" + Sprints:")
                         for sprint in sprints_in_board:
