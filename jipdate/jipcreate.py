@@ -114,6 +114,23 @@ jira_field_to_yaml = {
 }
 
 
+def get_sprints(jira, board_id):
+    # We need to loop over sprints the API returns maximum 50 sprints.
+    MAX_SPRINTS = 50
+    sprints_in_board = []
+    start_at = 0
+    is_last = False
+
+    while not is_last:
+        # We need a tmp variable to read the resultlist metadata.
+        tmp = jira.sprints(board_id=board_id, maxResults=MAX_SPRINTS, startAt=start_at)
+        sprints_in_board = sprints_in_board + tmp
+        is_last = tmp.isLast
+        start_at += MAX_SPRINTS
+
+    return sprints_in_board
+
+
 ################################################################################
 # Main function
 ################################################################################
@@ -225,7 +242,9 @@ def main():
                         log.debug(f"* {board}")
                         if board.type == "kanban":
                             continue
-                        sprints_in_board = jira.sprints(board_id=board.id)
+
+                        sprints_in_board = get_sprints(jira, board.id)
+
                         log.debug(f" + Sprints:")
                         for sprint in sprints_in_board:
                             log.debug(f"  - {sprint}")
