@@ -267,7 +267,7 @@ def get_jira_issues(jira, username):
 
     status = 'status in ("In Progress")'
     if all_status:
-        status = "status not in (Resolved, Closed)"
+        status = "status not in (Resolved, Closed, Completed)"
 
     if user is None:
         user = "currentUser()"
@@ -453,7 +453,9 @@ def parse_status_file(jira, filename, issues):
             # An optional 'resolution' attribute can be set when doing a transition
             # to Resolved, using the following pattern: Resolved / <resolution>
             if (
-                transition.startswith("Resolved") or transition.startswith("Closed")
+                transition.startswith("Resolved")
+                or transition.startswith("Closed")
+                or transition.startswith("Completed")
             ) and "/" in transition:
                 (transition, resolution) = map(str.strip, transition.split("/"))
                 if not resolution in resolution_map:

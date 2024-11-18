@@ -399,7 +399,7 @@ def test():
 ################################################################################
 def build_story_node(jira, story_key, d_handled=None, epic_node=None):
     si = jira.issue(story_key)
-    if si.fields.status.name in ["Closed", "Resolved"]:
+    if si.fields.status.name in ["Closed", "Resolved", "Completed"]:
         d_handled[str(si.key)] = [None, si]
         return None
 
@@ -444,7 +444,7 @@ def build_story_node(jira, story_key, d_handled=None, epic_node=None):
 def build_epics_node(jira, epic_key, d_handled=None, initiative_node=None):
     ei = jira.issue(epic_key)
 
-    if ei.fields.status.name in ["Closed", "Resolved"]:
+    if ei.fields.status.name in ["Closed", "Resolved", "Completed"]:
         d_handled[str(ei.key)] = [None, ei]
         return None
 
@@ -502,7 +502,7 @@ def build_epics_node(jira, epic_key, d_handled=None, initiative_node=None):
 # Initiatives
 ################################################################################
 def build_initiatives_node(jira, issue, d_handled):
-    if issue.fields.status.name in ["Closed", "Resolved"]:
+    if issue.fields.status.name in ["Closed", "Resolved", "Completed"]:
         d_handled[str(issue.key)] = [None, issue]
         return None
 
@@ -561,7 +561,7 @@ def build_orphans_tree(jira, key, d_handled):
     orphans_stories = []
     for i in all_issues:
         if str(i.key) not in d_handled:
-            if i.fields.status.name in ["Closed", "Resolved"]:
+            if i.fields.status.name in ["Closed", "Resolved", "Completed"]:
                 continue
             else:
                 if i.fields.issuetype.name == "Initiative":
