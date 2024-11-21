@@ -209,6 +209,9 @@ def main():
                     else:
                         fields["customfield_10014"] = issue["EpicLink"]
 
+                if "Parent" in issue.keys():
+                    fields["parent"] = {"key" : issue["Parent"]}
+
                 if "ClientStakeholder" in issue.keys():
                     csh_fields_dict = issue_meta_data["projects"][0]["issuetypes"][0][
                         "fields"
