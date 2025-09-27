@@ -6,6 +6,26 @@ import sys
 from jipdate import cfg
 from jira import JIRA
 from jira import JIRAError
+from requests.exceptions import JSONDecodeError
+
+
+def _get_auth_error_message(response_text, url):
+    """Return a user-friendly authentication error message."""
+    if not response_text:
+        hint = "Empty response - check network connectivity"
+    elif any(word in response_text.lower() for word in ["login", "sign in", "captcha"]):
+        hint = "Authentication required - complete web login/CAPTCHA first"
+    elif any(word in response_text.lower() for word in ["forbidden", "access denied"]):
+        hint = "Access denied - check credentials and permissions"
+    elif any(word in response_text.lower() for word in ["maintenance", "unavailable"]):
+        hint = "Server maintenance - try again later"
+    else:
+        hint = "Received HTML instead of JSON - likely authentication issue"
+
+    return (
+        f"Authentication failed: {hint}\n\n"
+        f"To fix: Open {url} in browser, logout/login, complete any CAPTCHA, then retry."
+    )
 
 
 def get_username_from_config():
@@ -135,15 +155,12 @@ def get_jira_instance(use_test_server):
                 ),
                 username,
             )
+    except JSONDecodeError as e:
+        log.error(_get_auth_error_message(getattr(e, "doc", ""), url))
+        sys.exit(os.EX_NOPERM)
     except JIRAError as e:
-        if e.text.find("CAPTCHA_CHALLENGE") != -1:
-            log.error(
-                "Captcha verification has been triggered by "
-                "JIRA - please go to JIRA using your web "
-                "browser, log out of JIRA, log back in "
-                "entering the captcha; after that is done, "
-                "please re-run the script"
-            )
+        if "CAPTCHA_CHALLENGE" in e.text:
+            log.error(_get_auth_error_message("captcha", url))
             sys.exit(os.EX_NOPERM)
         else:
             raise
