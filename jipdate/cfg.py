@@ -93,6 +93,56 @@ def get_config_file():
     return config_path + "/" + config_filename
 
 
+def validate_yaml_structure(config):
+    errors = []
+    server_fields = ["url", "token"]
+    expected_top_level = [
+        "version",
+        "server",
+        "test_server",
+        "comments",
+        "header",
+        "use_combined_issue_header",
+        "separator",
+        "text-editor",
+    ]
+
+    def check_server_section(section_name):
+        if section_name in config:
+            section = config[section_name]
+            if not isinstance(section, dict):
+                errors.append(
+                    f"'{section_name}' must be a dictionary/mapping with nested fields"
+                )
+            elif not set(section.keys()).intersection(server_fields):
+                errors.append(
+                    f"'{section_name}' section exists but contains no expected fields - they should be indented under '{section_name}:'"
+                )
+
+    check_server_section("server")
+    check_server_section("test_server")
+
+    for field in server_fields:
+        if field in config:
+            if "server" not in config and "test_server" not in config:
+                errors.append(
+                    f"Found '{field}' at root level - it should be indented under 'server:' or 'test_server:'"
+                )
+            elif "server" in config:
+                errors.append(
+                    f"Found '{field}' at root level - it should be indented under 'server:'"
+                )
+
+    config_keys = set(config.keys()) if config else set()
+    unexpected_keys = config_keys - set(expected_top_level) - set(server_fields)
+
+    for field_name in ["comments", "header"]:
+        if field_name in config and not isinstance(config[field_name], list):
+            errors.append(f"'{field_name}' should be a list")
+
+    return errors
+
+
 def get_server(use_test_server=False):
     # Get Jira Server details. Check first if using the test server
     # then try user config file, then default from cfg.py
@@ -105,9 +155,6 @@ def get_server(use_test_server=False):
 
 
 def initiate_config():
-    """Reads the config file (yaml format) and returns the sets the global
-    instance.
-    """
     global yml_config
     global config_file
 
@@ -118,3 +165,10 @@ def initiate_config():
     log.debug("Using config file: %s" % config_file)
     with open(config_file, "r") as yml:
         yml_config = yaml.load(yml, Loader=yaml.FullLoader)
+
+    validation_errors = validate_yaml_structure(yml_config)
+    if validation_errors:
+        log.error(f"Configuration validation failed for {config_file}:")
+        for error in validation_errors:
+            log.error(f"  - {error}")
+        sys.exit(1)
